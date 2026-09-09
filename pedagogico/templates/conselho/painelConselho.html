@@ -1,0 +1,282 @@
+{% extends "layouts/base.html" %}
+{% load conselho_tags %}
+
+{% block stylesheets %}
+<style>
+    .scroll-wrapper-top {
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        height: 18px;
+    }
+    .scroll-fake-div {
+        height: 1px;
+    }
+    .tabela-disciplina-th {
+        min-width: 85px;
+        max-width: 105px;
+        font-size: 0.68rem;
+        font-weight: 600;
+        line-height: 1.35 !important;
+        vertical-align: middle !important;
+        text-align: center;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        padding: 6px 3px !important;
+        background-color: #f8f9fa;
+    }
+    /* Estilos do feedback de salvamento */
+    .save-status {
+        font-size: 0.72rem;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    .save-status.salvando {
+        color: #ff9800;
+    }
+    .save-status.sucesso {
+        color: #28a745;
+    }
+    .save-status.erro {
+        color: #dc3545;
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<section class="pcoded-main-container">
+    <div class="pcoded-content">
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <h5>Conselho de Classe #{{ conselho.id }} - {{ conselho.turma.nome }}</h5>
+                        <p class="text-muted">Etapa: {{ conselho.periodoConselho.nome }} | Ano: {{ conselho.ano }} | Data: {{ conselho.dataConselho|date:"d/m/Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" id="formConselho">
+            {% csrf_token %}
+            <!-- Card Parecer Geral da Turma -->
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Parecer Geral da Turma</h5>
+                    <span id="status-geral" class="save-status"></span>
+                </div>
+                <div class="card-body">
+                    <textarea name="parecerGeral" id="parecerGeral"
+                        class="form-control {% if conselho.finalizado != 'S' %}auto-save-geral{% endif %}"
+                        rows="3"
+                        placeholder="Descreva os pontos gerais deliberados sobre a turma..."
+                        {% if conselho.finalizado == 'S' %}readonly style="background-color: #f8f9fa;"{% endif %}>{{ conselho.parecerGeral|default:'' }}</textarea>
+                </div>
+            </div>
+
+            <!-- Matriz de Alunos e Notas -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Quadro de Desempenho e Pareceres Individuais</h5>
+                    <small class="text-muted"><i class="feather icon-check"></i> Os pareceres são salvos automaticamente ao sair do campo.</small>
+                </div>
+                <div class="card-body table-border-style">
+
+                    <!-- Barra de rolagem superior sincronizada -->
+                    <div class="scroll-wrapper-top" id="scrollWrapperTop">
+                        <div class="scroll-fake-div" id="scrollFakeDiv"></div>
+                    </div>
+
+                    <!-- Tabela -->
+                    <div class="table-responsive" id="tabelaContainer">
+                        <table class="table table-bordered table-hover" id="tabelaPrincipal">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th style="min-width: 170px; font-size: 0.85rem;">Aluno</th>
+                                    <th style="min-width: 85px; text-align: center; font-size: 0.8rem;">Atestados</th>
+                                    <th style="min-width: 290px; font-size: 0.85rem;">Parecer Individual</th>
+                                    {% for disc in disciplinas %}
+                                        <th class="tabela-disciplina-th" title="{{ disc.nome }}">
+                                            {{ disc.nome }}
+                                        </th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in dados_alunos %}
+                                <tr>
+                                    <td>
+                                        <strong title="{{ item.aluno.nome }}">{{ item.aluno.nome|nome_curto }}</strong><br>
+                                        <small class="text-muted">{{ item.aluno.matricula }}</small>&nbsp;
+                                        <a href="{% url 'pedagogico:listAcompanhamentoPedagogico' item.aluno.id %}" target="_blank" class="badge badge-light-info">
+                                            <i class="feather icon-external-link"></i> Ficha
+                                        </a>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        {% if item.atestados %}
+                                            <span class="badge badge-danger" title="{{ item.atestados|length }} atestado(s) no ano">
+                                                {{ item.atestados|length }} atest.
+                                            </span>
+                                        {% else %}
+                                            <span class="badge badge-light-secondary">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="save-status" id="status-aluno-{{ item.aluno.id }}"></span>
+                                        </div>
+                                        <textarea
+                                            name="parecer_{{ item.aluno.id }}"
+                                            class="form-control {% if conselho.finalizado != 'S' %}auto-save-parecer{% endif %}"
+                                            data-aluno-id="{{ item.aluno.id }}"
+                                            rows="2"
+                                            style="font-size: 0.85rem; {% if conselho.finalizado == 'S' %}background-color: #f8f9fa;{% endif %}"
+                                            placeholder="Parecer individual..."
+                                            {% if conselho.finalizado == 'S' %}readonly{% endif %}>{{ item.parecer }}</textarea>
+                                    </td>
+                                    {% for disc in disciplinas %}
+                                        <td class="text-center align-middle" style="padding: 4px;">
+                                            {% with info=item.disciplinas|get_item:disc.id %}
+                                                {% if info and info.nota != '-' %}
+                                                    <span class="font-weight-bold" style="font-size: 0.85rem;">{{ info.nota }}</span><br>
+                                                    <small class="text-muted" style="font-size: 0.75rem;">{{ info.falta }}% F</small>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            {% endwith %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="{{ disciplinas|length|add:3 }}" class="text-center">Nenhum aluno com nota válida nesta turma.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4 text-right">
+                        {% if conselho.finalizado == 'S' %}
+                            <span class="badge badge-success p-2 font-weight-bold" style="font-size: 0.9rem;">
+                                <i class="feather icon-lock"></i> Conselho Finalizado (Apenas Leitura)
+                            </span>
+                        {% else %}
+                            <button type="submit" name="acao" value="salvar" class="btn btn-secondary mr-2">
+                                <i class="feather icon-save"></i> Salvar Manualmente
+                            </button>
+                            <button type="submit" name="acao" value="finalizar" class="btn btn-success" onclick="return confirm('Deseja finalizar o conselho? Todos os pareceres preenchidos serão lançados na ficha individual de cada aluno!')">
+                                <i class="feather icon-check-circle"></i> Finalizar e Lançar nas Fichas
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // --- 1. Sincronização de Rolagem Dupla ---
+        const scrollTop = document.getElementById("scrollWrapperTop");
+        const scrollBottom = document.getElementById("tabelaContainer");
+        const fakeDiv = document.getElementById("scrollFakeDiv");
+        const table = document.getElementById("tabelaPrincipal");
+
+        if (scrollTop && scrollBottom && fakeDiv && table) {
+            fakeDiv.style.width = table.scrollWidth + "px";
+            scrollTop.addEventListener("scroll", function() {
+                scrollBottom.scrollLeft = scrollTop.scrollLeft;
+            });
+            scrollBottom.addEventListener("scroll", function() {
+                scrollTop.scrollLeft = scrollBottom.scrollLeft;
+            });
+            window.addEventListener("resize", function() {
+                fakeDiv.style.width = table.scrollWidth + "px";
+            });
+        }
+
+        // --- 2. Autosave em Background (AJAX) ---
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const conselhoUrl = window.location.href;
+
+        // Função genérica de envio silencioso
+        function enviarAutosave(formData, statusElement) {
+            statusElement.textContent = "Salvando...";
+            statusElement.className = "save-status salvando";
+
+            fetch(conselhoUrl, {
+                method: "POST",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": csrfToken
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "ok") {
+                    statusElement.textContent = "Salvo ✔";
+                    statusElement.className = "save-status sucesso";
+                    setTimeout(() => {
+                        statusElement.textContent = "";
+                    }, 2500);
+                } else {
+                    statusElement.textContent = "Erro ao salvar ✖";
+                    statusElement.className = "save-status erro";
+                }
+            })
+            .catch(() => {
+                statusElement.textContent = "Erro de conexão ✖";
+                statusElement.className = "save-status erro";
+            });
+        }
+
+        // Autosave do Parecer Individual ao sair da caixa (blur)
+        const camposParecer = document.querySelectorAll(".auto-save-parecer");
+        camposParecer.forEach(campo => {
+            let valorAnterior = campo.value;
+
+            campo.addEventListener("blur", function() {
+                const valorAtual = this.value;
+                if (valorAtual !== valorAnterior) {
+                    const alunoId = this.getAttribute("data-aluno-id");
+                    const statusEl = document.getElementById(`status-aluno-${alunoId}`);
+
+                    const formData = new FormData();
+                    formData.append("is_ajax", "1");
+                    formData.append("aluno_id", alunoId);
+                    formData.append("parecer", valorAtual);
+
+                    enviarAutosave(formData, statusEl);
+                    valorAnterior = valorAtual;
+                }
+            });
+        });
+
+        // Autosave do Parecer Geral ao sair da caixa (blur)
+        const campoGeral = document.getElementById("parecerGeral");
+        if (campoGeral) {
+            let valorAnteriorGeral = campoGeral.value;
+
+            campoGeral.addEventListener("blur", function() {
+                const valorAtualGeral = this.value;
+                if (valorAtualGeral !== valorAnteriorGeral) {
+                    const statusGeral = document.getElementById("status-geral");
+
+                    const formData = new FormData();
+                    formData.append("is_ajax", "1");
+                    formData.append("parecerGeral", valorAtualGeral);
+
+                    enviarAutosave(formData, statusGeral);
+                    valorAnteriorGeral = valorAtualGeral;
+                }
+            });
+        }
+    });
+</script>
+{% endblock javascripts %}

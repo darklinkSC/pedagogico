@@ -1,0 +1,108 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Tables {% endblock %} 
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}	
+    <!-- [ Main Content ] start -->
+    <section class="pcoded-main-container">
+        <div class="pcoded-content">
+            <!-- [ breadcrumb ] start -->
+            <div class="page-header">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col-md-12">
+                            <div class="page-header-title">
+                                <h5 class="m-b-10">Lista de Alunos Importados</h5>
+                            </div>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
+                                <li class="breadcrumb-item"><a href="/pedagogico/importarDados">Importar Dados</a></li>
+                                <li class="breadcrumb-item"><a href="#!">Lista de Alunos Importados</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ breadcrumb ] end -->
+            <!-- [ Main Content ] start -->
+            <div class="row">
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Lista de Alunos Importados</h5>
+                        </div>
+                        <div class="card-header">
+                            <form method="GET">
+                                <div class="input-group-prepend">
+                                    <input type="text" class="form-control" placeholder="" name="search" id="search" width="150">&nbsp;&nbsp;&nbsp;
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Matrícula#</th>
+                                            <th>Nome</th>
+                                            <th>Nacionalidade</th>
+                                            <th>Estado</th>
+                                            <th>Dt Nascimento</th>
+                                            <th>RG</th>
+                                            <th>CPF</th>
+                                            <th>Telefone</th>
+                                            <th>Email</th>
+                                            <th>Necessidade Especial</th>
+                                            <th>Sexo</th>
+                                            <th>Raça</th>
+                                            <th>Ingresso</th>
+                                            <th>Curso</th>
+                                            <th>Situação</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Fazendo LOOP para buscar os servidores -->
+                                        {% for dado in lista %}
+                                            <tr>
+                                                <td>{{ dado.matricula }}</td>
+                                                <td>{{ dado.nome }}</td>
+                                                <td>{{ dado.nacionalidade }}</td>
+                                                <td>{{ dado.estado }}</td>
+                                                <td>{{ dado.dataNascimento|date:'d/m/Y'  }}</td>
+                                                <td>{{ dado.rg }}</td>
+                                                <td>{{ dado.cpf }}</td>
+                                                <td>{{ dado.telefone }}</td>
+                                                <td>{{ dado.email }}</td>
+                                                <td>{{ dado.necessidadeEspcial }}</td>
+                                                <td>{{ dado.sexo }}</td>
+                                                <td>{{ dado.raca }}</td>
+                                                <td>{{ dado.ingresso }}</td>
+                                                <td>{{ dado.curso }}</td>
+                                                <td>{{ dado.status }}</td>
+                                            </tr>
+                                        {% empty %}
+                                            <li>Sem itens na lista.</li>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% include 'layouts/paginacao.html' %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- [ stiped-table ] end -->
+            </div>
+            <!-- [ Main Content ] end -->
+        </div>
+    </section>
+    <!-- [ Main Content ] end -->
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+{% endblock javascripts %}

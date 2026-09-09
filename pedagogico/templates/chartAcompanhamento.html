@@ -1,0 +1,214 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Tables {% endblock %} 
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}	
+    <!-- [ Main Content ] start -->
+    <section class="pcoded-main-container">
+        <div class="pcoded-content">
+            <!-- [ breadcrumb ] start -->
+            <div class="page-header">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col-md-12">
+                            <div class="page-header-title">
+                                <h5 class="m-b-10">Gráficos Acompanhamento Pedagógico de Alunos</h5>
+                            </div>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
+                                <li class="breadcrumb-item"><a href="/pedagogico/acompanhamentoPedagogico">Acompanhamento Pedagógico de Alunos</a></li>
+                                <li class="breadcrumb-item"><a href="#!">Gráficos Acompanhamento</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ breadcrumb ] end -->
+            <!-- [ Main Content ] start -->
+            <div class="row">
+                <!-- order-card start -->
+                {% include "layouts/templateMenuAcompanhamento.html" %} 
+                <!-- [ stiped-table ] start -->
+                <!-- [ stiped-table ] start -->
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Gráficos Acompanhamento Pedagógico de Alunos</h5>
+                        </div>
+                        <div class="card-header">
+                            <form method="GET">
+                                <br>
+                                <div class="input-group-prepend">
+                                    Tipo de Gráfico &nbsp;&nbsp;&nbsp;
+                                    <select name='tipoGrafico' class="form-control" style="width: 300px;">
+                                        <option value="-" selected>--------</option>
+                                        <option value="O" >Total de Ocorrências Período</option>
+                                        <option value="A" >Gráficos Atestado Médico</option>
+                                    </select>
+                                </div><br>
+                                <div class="input-group-prepend">
+                                    Tipo de Ocorrência&nbsp;&nbsp;&nbsp;
+                                    <!-- Fazendo LOOP para Tipo Ocorrencia -->
+                                    <select name="tipoOcorrencia" class="form-control" style="width: 500px;">
+                                        <option value="" selected>---------</option>
+                                    {% for tipoOcorrencia in listTipoOcorrencia %}
+                                        <option value="{{ tipoOcorrencia.id }}">{{ tipoOcorrencia.nome }}</option>
+                                    {% endfor %}
+                                    </select>
+                                </div><br>
+                                <div class="input-group-prepend">
+                                    Período consulta &nbsp;&nbsp;&nbsp;
+                                    <input type="date" class="form-control" name="dataDe" id="dataDe" style="width: 300px;">&nbsp;&nbsp;&nbsp;
+                                    <input type="date" class="form-control"  name="dataAte" id="dataAte" style="width: 300px;">&nbsp;&nbsp;&nbsp;
+                                    <button class="btn btn-primary" type="submit" id="button-addon1"><i class="feather mr-2 icon-search"></i>Buscar</button>&nbsp;&nbsp;&nbsp;
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-6" {% if tipoGrafico != "A" %} hidden {% endif %}>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Alunos com Atestado</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="line-chart-1"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6" {% if tipoGrafico != "O" %} hidden {% endif %}>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Atendimentos</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="bar-chart-1"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- [ stiped-table ] end -->
+            </div>
+            <!-- [ Main Content ] end -->
+        </div>
+    </section>
+    <!-- [ Main Content ] end -->
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script src="/static/assets/js/plugins/apexcharts.min.js"></script>
+
+<script>
+
+//Gráficos de linha
+var colors = [
+      '#008FFB',
+      '#00E396',
+      '#FEB019',
+      '#FF4560',
+      '#775DD0',
+      '#546E7A',
+      '#26a69a',
+      '#D10CE8'
+    ]
+
+var options = {
+        series: [{
+            name: "Alunos",
+            data: [
+                {% for key, value in lista.items %} 
+                  {{value}},
+                {% endfor %}
+              ]
+        }],
+          chart: {
+          height: 350,
+          type: 'line',
+          zoom: {
+            enabled: false
+          }
+        },
+        dataLabels: {
+          enabled: false
+        },
+        stroke: {
+          curve: 'straight'
+        },
+        title: {
+          text: '',
+          align: 'left'
+        },
+        grid: {
+          row: {
+            colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns
+            opacity: 0.5
+          },
+        },
+        xaxis: {
+          categories: [
+            {% for key, value in lista.items %} 
+              "{{key}}",
+            {% endfor %}
+          ],
+        }
+        };
+
+        var chart = new ApexCharts(document.querySelector("#line-chart-1"), options);
+        chart.render();
+
+//Gráfico barra
+var options = {
+        series: [{
+          data: [
+            {% for l in lista %}  
+                {{ l.count }},
+            {% endfor %}
+            ]
+        }],
+          chart: {
+          height: 350,
+          type: 'bar',
+          events: {
+            click: function(chart, w, e) {
+              // console.log(chart, w, e)
+            }
+          }
+        },
+        xaxis: {
+          categories: [
+          {% for l in lista %}      
+            "{{ l.tipoOcorrencia }}",
+          {% endfor %} 
+          ],
+          labels: {
+            style: {
+              colors: colors,
+              fontSize: '12px'
+            }
+          }
+        },
+        colors: colors,
+        plotOptions: {
+          bar: {
+            columnWidth: '45%',
+            distributed: true,
+          }
+        },
+        dataLabels: {
+          enabled: false
+        },
+        legend: {
+          show: false
+        }
+        };
+
+        var chart = new ApexCharts(document.querySelector("#bar-chart-1"), options);
+        chart.render();
+    
+</script>
+{% endblock javascripts %}

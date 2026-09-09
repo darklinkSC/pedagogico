@@ -1,0 +1,309 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Tables {% endblock %} 
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}	
+    <!-- [ Main Content ] start -->
+    <section class="pcoded-main-container">
+        <div class="pcoded-content">
+            <!-- [ breadcrumb ] start -->
+            <div class="page-header">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col-md-12">
+                            <div class="page-header-title">
+                                <h5 class="m-b-10">Acompanhamento Pedagógico de Alunos</h5>
+                            </div>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
+                                <li class="breadcrumb-item"><a href="#!">Acompanhamento Pedagógico de Alunos</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ breadcrumb ] end -->
+            <!-- [ Main Content ] start -->
+            <div class="row">
+                <!-- [ opcoes do menu] -->
+                {% include "layouts/templateMenuAcompanhamento.html" %} 
+                <!-- [ stiped-table ] start -->
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Acompanhamento Pedagógico {{ tipoPessoa }}</h5>
+                            <input type="radio" id="aluno" name="choice" value="A" />
+                            <label for="male">Alunos</label>
+                            <input type="radio" id="servidor" name="choice" value="S" />
+                            <label for="female">Servidores</label>
+                            <input type="radio" id="turma" name="choice" value="T" />
+                            <label for="other">Turmas</label>
+                        </div>
+                        <div class="card-header">
+                            <form method="GET">
+                                <div class="input-group-prepend">
+                                    <input type="text" class="form-control" placeholder="" name="search" id="search" width="150">&nbsp;&nbsp;&nbsp;
+                                    <button class="btn btn-primary" type="submit" id="button-addon1"><i class="feather mr-2 icon-search"></i>Buscar</button>&nbsp;&nbsp;&nbsp;
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Matricula</th>
+                                            <th>Nome</th>
+                                            <th>Email</th>
+                                            <th>Telefone</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Fazendo LOOP para buscar os servidores -->
+                                        {% for pessoa in lista %}
+                                            <tr>
+                                                <td><a href="{% url 'pedagogico:listAcompanhamentoPedagogico' pessoa.id %}"><i class="feather icon-edit" title="Informações do Aluno"></i></a></td>
+                                                <td>{{ pessoa.matricula }}</td>
+                                                <td>{{ pessoa.nome }}</td>
+                                                <td>{{ pessoa.email }}</td>
+                                                <td>{{ pessoa.telefone }}</td>
+                                            </tr>
+                                        {% empty %}
+                                            <li>Sem itens na lista.</li>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% include 'layouts/paginacao.html' %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- [ stiped-table ] end -->
+            </div>
+            <!-- [ Main Content ] end -->
+        </div>
+    </section>
+    <!-- [ Main Content ] end -->
+    <!-- TESTES PARA CHAT IA -->
+    <button id="open-chat" class="btn btn-primary" style="position: fixed; bottom: 20px; right: 20px; border-radius: 50%; width: 60px; height: 60px; z-index: 1000; box-shadow: 0px 4px 10px rgba(0,0,0,0.3);">
+        <i class="feather icon-message-circle" style="font-size: 24px;"></i>
+    </button>
+    
+    <div id="chat-container" class="card" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 350px; height: 450px; z-index: 1000; box-shadow: 0px 4px 15px rgba(0,0,0,0.2); flex-direction: column;">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h6 class="text-white m-0">Assistente IA Pedagógico</h6>
+            <button id="close-chat" class="close text-white"><span>&times;</span></button>
+        </div>
+        <div id="chat-box" class="card-body" style="overflow-y: auto; flex-grow: 1; background: #f4f7fa;">
+            <p class="text-muted small">Olá ! Como posso ajudar no acompanhamento hoje?</p>
+        </div>
+        <div class="card-footer p-2">
+            <div class="input-group">
+                <input type="text" id="chat-input" class="form-control" placeholder="Digite sua pergunta...">
+                <div class="input-group-append">
+                    <button id="chat-send" class="btn btn-primary"><i class="feather icon-send"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+$("#aluno").click(function()
+{
+    document.location.href = "/pedagogico/acompanhamentoPedagogico";
+});
+$("#servidor").click(function()
+{
+    document.location.href = "/pedagogico/acompanhamentoPedagogicoServidor";
+});
+$("#turma").click(function()
+{
+    document.location.href = "/pedagogico/acompanhamentoPedagogicoTurma";
+});
+
+
+    // IDs originais do seu HTML: chat-container, chat-box, chat-input, chat-send, open-chat, close-chat
+
+    // Abrir e fechar o chat (Controle de UI que já estava no seu HTML)
+    $("#open-chat").click(function() { $("#chat-container").show(); });
+    $("#close-chat").click(function() { $("#chat-container").hide(); });
+
+// Configurações de UI
+$(document).ready(function() {
+        $("#open-chat").click(function() { $("#chat-container").css("display", "flex"); });
+        $("#close-chat").click(function() { $("#chat-container").hide(); });
+        $("#chat-input").keypress(function(e) { if(e.which == 13) enviarMensagem(); });
+        $("#chat-send").click(function() { enviarMensagem(); });
+    });
+
+    function enviarMensagem() {
+        const input = document.getElementById('chat-input');
+        const chatBox = document.getElementById('chat-box');
+        const msg = input.value.trim();
+        if (!msg) return;
+
+        chatBox.innerHTML += `<div class="text-right mb-2"><span class="badge badge-primary p-2">${msg}</span></div>`;
+        input.value = '';
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        fetch("{% url 'pedagogico:chat_ia' %}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: new URLSearchParams({'mensagem': msg})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'multiplos') {
+                let botoes = data.alunos.map(a => 
+                    `<button class="btn btn-xs btn-outline-primary btn-block mb-1 text-left" onclick="acessoDireto(${a.id}, '${a.nome}')">
+                        <i class="feather icon-user"></i> ${a.nome}
+                    </button>`
+                ).join('');
+                chatBox.innerHTML += `<div class="card p-2 bg-light small mb-2 shadow-sm"><b>Vários encontrados:</b><br>${botoes}</div>`;
+            } 
+            else if (data.status === 'sucesso') {
+                renderizarCard(data.dados);
+            } else {
+                chatBox.innerHTML += `<div class="text-left mb-2 small text-danger">Erro: ${data.message}</div>`;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        })
+        .catch(err => console.error("Erro no fetch:", err));
+    }
+
+    // function acessoDireto(id, nome) {
+    //     renderizarCard({
+    //         acao: 'contato',
+    //         aluno_id: id,
+    //         nome_completo: nome,
+    //         url_ficha: `/pedagogico/listAcompanhamentoPedagogico/${id}`,
+    //         contato_info: "Registro selecionado da lista."
+    //     });
+    // }
+    function acessoDireto(id, nome) {
+        // Mostra um aviso temporário de que está carregando
+        const chatBox = document.getElementById('chat-box');
+        chatBox.innerHTML += `<div id="loading-${id}" class="text-left mb-2 small text-muted">Buscando dados de ${nome}...</div>`;
+
+        // Faz uma requisição para buscar os dados completos do aluno selecionado
+        fetch("{% url 'pedagogico:chat_ia' %}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: new URLSearchParams({'mensagem': `Detalhes do aluno ID ${id}`}) // Enviamos um comando específico
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Remove o aviso de carregando
+            const loader = document.getElementById(`loading-${id}`);
+            if (loader) loader.remove();
+
+            if (data.status === 'sucesso') {
+                renderizarCard(data.dados);
+            } else {
+                alert("Erro ao buscar detalhes do aluno.");
+            }
+        });
+    }
+
+    function renderizarCard(d) {
+        const chatBox = document.getElementById('chat-box');
+        
+        if (d.acao === 'lancamento') {
+            chatBox.innerHTML += `
+                <div class="card border-primary mb-2 small shadow-sm">
+                    <div class="card-body p-2 text-left">
+                        <h6 class="text-primary mb-1">${d.nome_completo}</h6>
+                        <p class="mb-2"><b>${d.tipo}:</b> ${d.obs}</p>
+                        <button class="btn btn-sm btn-success btn-block" onclick="confirmarNoBanco(${d.aluno_id})">CONFIRMAR</button>
+                    </div>
+                </div>`;
+        } 
+        else if (d.acao === 'contato') {
+            chatBox.innerHTML += `
+                <div class="card border-info mb-2 shadow-sm text-left">
+                    <div class="card-body p-3">
+                        <h5 class="text-info"><b>${d.nome_completo}</b></h5>
+                        <div style="font-size: 0.85rem; line-height: 1.5;">
+                            <span><b>📞 Tel:</b> ${d.contato_info}</span><br>
+                            <span><b>✉️ E-mail:</b> ${d.email}</span>
+                        </div>
+                        <hr class="my-2">
+                        <div class="row no-gutters">
+                            <div class="col-6 pr-1">
+                                <a href="${d.url_ficha}" target="_blank" class="btn btn-info btn-block text-white">Ficha</a>
+                            </div>
+                            <div class="col-6 pl-1">
+                                <button class="btn btn-outline-primary btn-block" onclick="prepararAtraso('${d.nome_completo}')">Atraso</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+        else if (d.acao === 'relatorio') {
+            // CORREÇÃO AQUI: Adicionado chatBox.innerHTML += para renderizar na tela
+            chatBox.innerHTML += `
+                <div class="card border-warning mb-2 shadow-sm text-left">
+                    <div class="card-body p-3">
+                        <div style="font-size: 1.1rem; color: #856404; font-weight: bold; margin-bottom: 5px;">
+                            📊 Relatório: ${d.tipo_nome}
+                        </div>
+                        <div style="font-size: 0.95rem; color: #666; margin-bottom: 8px;">
+                            Período: <b>${d.inicio}</b> até <b>${d.fim}</b>
+                        </div>
+                        <hr class="my-2">
+                        <a href="${d.url}" target="_blank" class="btn btn-sm btn-warning btn-block font-weight-bold text-dark">
+                            <i class="feather icon-printer"></i> ABRIR RELATÓRIO
+                        </a>
+                    </div>
+                </div>`;
+        } else {
+            chatBox.innerHTML += `<div class="text-left mb-2"><span class="badge badge-light border p-2">${d.obs}</span></div>`;
+        }
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function prepararAtraso(nome) {
+        document.getElementById('chat-input').value = `Lançar atraso para ${nome}`;
+        enviarMensagem();
+    }
+
+    function confirmarNoBanco(id) {
+        // Busca o texto da observação que a IA gerou no card
+        const cardBody = event.target.closest('.card-body');
+        const obsFull = cardBody.querySelector('p').innerText;
+
+        event.target.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Gravando...';
+        event.target.disabled = true;
+
+        fetch("{% url 'pedagogico:salvar_atraso_ia' %}", {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/x-www-form-urlencoded', 
+                'X-CSRFToken': '{{ csrf_token }}' 
+            },
+            body: new URLSearchParams({
+                'aluno_id': id,
+                'obs': obsFull
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                cardBody.innerHTML = `<div class="alert alert-success mb-0 small"><b>Sucesso:</b> ${data.message}</div>`;
+            } else {
+                alert("Erro ao gravar no banco do IFSC: " + data.message);
+                event.target.innerHTML = 'CONFIRMAR';
+                event.target.disabled = false;
+            }
+        });
+    }
+
+</script>
+{% endblock javascripts %}

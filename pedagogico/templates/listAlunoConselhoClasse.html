@@ -1,0 +1,144 @@
+{% extends "layouts/base.html" %}
+
+{% load bootstrap %}
+
+{% block title %} UI Tables {% endblock %} 
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}	
+    <!-- [ Main Content ] start -->
+    <section class="pcoded-main-container">
+        <div class="pcoded-content">
+            <!-- [ breadcrumb ] start -->
+            <div class="page-header">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col-md-12">
+                            <div class="page-header-title">
+                                <h5 class="m-b-10">Conselho de Classe</h5>
+                            </div>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
+                                <li class="breadcrumb-item"><a href="/pedagogico/listCursoConselhoClasse">Lista de Cursos</a></li>
+                                <li class="breadcrumb-item"><a href={% url 'pedagogico:listTurmaConselhoClasse' curso.id %}>Lista de Turmas</a></li>
+                                <li class="breadcrumb-item"><a href={% url 'pedagogico:listAlunoPorUCConselhoClasse' curso.id periodo %}>Lista de Alunos</a></li>
+                                <li class="breadcrumb-item"><a href="#!">Conselhor Classe</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ breadcrumb ] end -->
+            <!-- [ Main Content ] start -->
+            <div class="row">            
+                <!-- [ stiped-table ] start -->
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Curso: {{ curso.nome }} - Aluno: {{ aluno.nome }}</h5>
+                            {% if aluno.foto != '' %}<img src="{{ aluno.foto.url }}" class="img-radius" width="100">{% endif %}
+                            <hr>
+                        </div>
+                        <div class="card-body">
+                            <button type="button" class="btn-primary" data-toggle="modal" data-target="#myModalParecer">
+                                                            <i class="fas fa-book fa-2x"></i>&nbsp; Parecer Aluno</button>
+                            <button type="button" class="btn-primary" data-toggle="modal" data-target="#myModalAtestado">
+                                                            <i class="fas fa-notes-medical fa-2x"></i>&nbsp; Atestados Médicos</button>                     
+                        </div>
+                    </div>
+                    <!-- Modal -->
+                    <div class="modal fade" id="myModalParecer" tabindex="-1" role="dialog" aria-labelledby="Parecer">
+                        <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h4 class="modal-title" id="myModalLabel">Parecer</h4>
+                            </div>
+                            <div class="modal-body">
+                                <form action="{% url 'pedagogico:listAlunoConselhoClasse' aluno.id curso.id periodo %}" method="POST" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    {{ form|bootstrap }}
+                                    <input type="submit" class="btn btn-primary" value="Salvar">
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    <div class="modal fade" id="myModalAtestado" tabindex="-1" role="dialog" aria-labelledby="Atestados">
+                        <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h4 class="modal-title" id="myModalLabel">Atestados</h4>
+                            </div>
+                            <div class="modal-body">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Atestado</th>
+                                            <th>Data Inicio</th>
+                                            <th>Data Final</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for atestado in listaAtestado %}
+                                            <tr>
+                                                <td>{{ atestado.descricao }}</td>
+                                                <td>{{ atestado.dataAtestadoInicio|date:'d/m/Y' }}</td>
+                                                <td>{{ atestado.dataAtestadoFim|date:'d/m/Y'  }}</td>
+                                            </tr>
+                                        {% empty %}
+                                            <li>Sem itens na lista.</li>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Unidade Curricular</th>
+                                            <th>Nota</th>
+                                            <th>Frequência</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for matricula in lista %}
+                                            <tr>
+                                                <td>{{ matricula.unidadeCurricular.nome }}</td>
+                                                <td>{{ matricula.notaFinal }}</td>
+                                                <td>{{ matricula.percentualFalta }}</td>
+                                            </tr>
+                                        {% empty %}
+                                            <li>Sem itens na lista.</li>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- [ stiped-table ] end -->
+            </div>
+            <!-- [ Main Content ] end -->
+        </div>
+    </section>
+    <!-- [ Main Content ] end -->
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+{% endblock javascripts %}

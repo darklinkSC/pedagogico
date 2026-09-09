@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <title>Consulta de Atestados - Professores</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+    
+    <link rel="stylesheet" href="/static/assets/css/style.css">
+    <style>
+        body { background-color: #f4f7fa; padding: 20px; }
+        .container-fluid { max-width: 1200px; margin: 0 auto; }
+        .card { border-top: 4px solid #ed5565; } 
+        .badge-danger { background-color: #ed5565; }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-sm-12 text-center">
+            <h3 class="mt-4">SISTEMA PEDAGÓGICO</h3>
+            <p class="text-muted">Consulta de Alunos com Atestado Médico Vigente</p>
+        </div>
+    </div>
+
+    <div class="card-body">
+    <form method="GET" id="filterForm">
+        <div class="row">
+            <div class="col-md-5">
+                <label class="font-weight-bold">Turma:</label>
+                <select name="turma_slug" class="form-control">
+                    <option value="">-- Selecione --</option>
+                    {% for t in opcoes_turmas %}
+                        <option value="{{ t }}" {% if turma_sel == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-5">
+                <label class="font-weight-bold">Data de Referência:</label>
+                <input type="date" name="data_pesquisa" class="form-control" value="{{ data_pesquisa }}">
+            </div>
+
+            <div class="col-md-2">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="feather icon-search"></i> Filtrar
+                </button>
+            </div>
+        </div>
+    </form>
+    </div>
+
+    {% if turma_sel %}
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card shadow-sm">
+                <div class="card-body table-border-style">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nome do Aluno</th>
+                                    <th>Data de Início</th>
+                                    <th>Previsão de Retorno</th>
+                                </tr>
+                            </thead>
+                                <tbody>
+                                    {% for registro in acompanhamentos %}
+                                        <tr>
+                                            <td><strong>{{ registro.nome }}</strong></td>
+                                            <td><span class="badge badge-light-danger">{{ registro.dataAtestadoInicio|date:'d/m/Y' }}</span></td>
+                                            <td><span class="badge badge-danger">{{ registro.dataAtestadoFim|date:'d/m/Y' }}</span></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <footer class="text-center mt-5">
+        <small class="text-muted">Acesso restrito à rede interna do Campus Araranguá</small>
+    </footer>
+</div>
+
+</body>
+</html>

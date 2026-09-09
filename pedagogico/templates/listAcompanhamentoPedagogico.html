@@ -1,0 +1,262 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Tables {% endblock %} 
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}	
+    <!-- [ Main Content ] start -->
+    <section class="pcoded-main-container">
+        <div class="pcoded-content">
+            <!-- [ breadcrumb ] start -->
+            <div class="page-header">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col-md-12">
+                            <div class="page-header-title">
+                                <h5 class="m-b-10">Acompanhamento Pedagógico</h5>
+                            </div>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
+                                <li class="breadcrumb-item"><a href="/pedagogico/acompanhamentoPedagogico">Acompanhamento Pedagógico</a></li>
+                                <li class="breadcrumb-item"><a href="#!">Acompanhamento</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ breadcrumb ] end -->
+            <!-- [ Main Content ] start -->
+            <div class="row">
+                <div class="col-md-6 col-xl-4">
+					<div class="card">
+						<div class="card-body">
+							<h5 class="card-title">Informações &nbsp;&nbsp;
+                                {% if aluno.foto != '' %}<img src="{{ aluno.foto.url }}" class="img-radius" width="100">{% endif %}</h5>
+                            
+							<p class="card-text"><b>Nome : {{ aluno.nome }}</b></p>
+							<p class="card-text">Matricula : {{ aluno.matricula }} </p>
+                            {% if aluno.tipoPessoa == 'A' %}
+                            <p class="card-text">Curso : {{ curso.nome }} </p>
+                            <p class="card-text">Unidade Curriculares <button type="button" class="btn" data-toggle="modal" data-target="#myModalUC">
+                                <i class="fas fa-search"></i></button></p>
+                            {% endif %}
+                            <p class="card-text">Fone : {{ aluno.telefone }} </p>
+                            <p class="card-text">CPF : {{ aluno.cpf }} </p>
+                            {% if aluno.tipoPessoa == 'A' %}
+                            <p class="card-text">Recebe PAEVs : 
+                                <input type="radio" id="paevsSim" name="paevs" value="S" {% if infoAluno.paevs == "S" %}checked="checked"{% endif %}>
+                                Sim 
+                                <input type="radio" id="paevsNao" name="paevs" value="N" {% if infoAluno.paevs != "S" %}checked="checked"{% endif %}>
+                                Não
+                            </p>
+                            {% endif %}
+						</div>
+					</div>
+				</div>
+                <!-- Modal  de UNIDADE CURRICULARES-->
+                <div class="modal fade" id="myModalUC" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                    <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h4 class="modal-title" id="myModalLabel">Unidades Curriculares</h4>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Disciplina</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Fazendo LOOP para buscar os servidores -->
+                                    {% for uc in listaMatricula %}
+                                        <tr>
+                                            <td>{{ uc.unidadeCurricular.nome }}</td>
+                                        </tr>                     
+                                    {% empty %}
+                                        <li>Sem itens na lista.</li>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                <div class="col-md-auto col-xl-3 ">
+					<div class="col-md-4 col-xl-10">
+                        <div class="card bg-c-blue order-card">
+                            <div class="card-body">
+                                <p class="m-b-0" ><a href="{% url 'pedagogico:addOcorrenciaAluno' aluno.id %}" style="color:#fff"><i class="feather mr-2 icon-plus"></i>Adicionar Atendimento</a></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-xl-10">
+                        <div class="card bg-c-blue order-card">
+                            <div class="card-body">
+                                <p class="m-b-0" style="color:#fff"><a href="{% url 'pedagogico:addAtestadoAluno' aluno.id %}" style="color:#fff"><i class="feather mr-2 icon-plus"></i>Adicionar Atestado</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-auto col-xl-3">
+                    <div class="col-md-4 col-xl-10">
+                        <div class="card bg-c-blue order-card">
+                            <div class="card-body">
+                                <p class="m-b-0" style="color:#fff"><a href="{% url 'pedagogico:addParecerAluno' aluno.id %}" style="color:#fff">Listar Notas Conselhos</a></p>
+                            </div>
+                        </div>
+                    </div>
+                    {% if 'pedagogico.ocorrencia_restrita' in perms %}
+                    <div class="col-md-4 col-xl-10">
+                        <div class="card bg-c-blue order-card">
+                            <div class="card-body">
+                                <p class="m-b-0" style="color:#fff"><a href="{% url 'pedagogico:addOcorrenciaAlunoRestrito' aluno.id %}" style="color:#fff"><i class="feather mr-2 icon-plus"></i>Adicionar Ocorrência Restrita</a></p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+				</div>
+                <!-- [ stiped-table ] start -->
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Histórico de Ocorrências</h5>
+                            <input type="radio" id="simplificado" name="choice" value="S" />
+                            <label for="simplificado">Simplificado</label>
+                            <input type="radio" id="detalhado" name="choice" value="D" />
+                            <label for="detalhado">Detalhado</label>
+                            <form method="GET" name="formSelect" >
+                                <div class="input-group-prepend">
+                                    Tipo de Atendimento&nbsp;&nbsp;&nbsp;
+                                    <!-- Fazendo LOOP para Tipo Ocorrencia -->
+                                    <select name="tipoOcorrencia" class="form-control" required id="id_tipoOcorrencia" style="width: 500px;">
+                                        <option value="0" selected>---------</option>
+                                        {% for tipoOcorrencia in listTipoOcorrencia %}
+                                        <option value="{{ tipoOcorrencia.id }}">{{ tipoOcorrencia.nome }}</option>
+                                        {% endfor %}
+                                    </select>&nbsp;&nbsp;
+                                    <button class="btn btn-primary" type="submit" id="button-addon1"><i class="feather mr-2 icon-search"></i>Buscar</button>&nbsp;&nbsp;&nbsp;
+                                </div>
+                            </form>
+                        </div>
+                        <p align="left"><button type="button" class="btn"  id="impressaoRelatorio" onclick="abrirRelatorioPrint()"><i class="fas fa-print"></i>&nbsp;&nbsp;Imprimir Atendimentos</button></p>
+                        <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Atendimento</th>
+                                            {% if tipoExibicao == 'D' %}
+                                            <th>Descrição</th>
+                                            {% endif %}
+                                            <th>Data Atendimento</th>
+                                            <th>Data Atestado</th>
+                                            <th>Anexo</th>
+                                            <th>Atendido Por</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Fazendo LOOP para buscar os servidores -->
+                                        {% for acompanhamento in lista %}
+                                            <tr>
+                                                <td width="1">{% if acompanhamento.tipoOcorrencia.statusPublico == 'S' %}
+                                                        <button type="button" class="btn" data-toggle="modal" data-target="#myModal{{acompanhamento.id}}">
+                                                            <i class="fas fa-search"></i></button>
+                                                    {% elif 'pedagogico.ocorrencia_restrita' in perms %}
+                                                        <button type="button" class="btn" data-toggle="modal" data-target="#myModal{{acompanhamento.id}}">
+                                                            <i class="fas fa-search"></i></button>
+                                                    {% endif %}
+
+                                                    <button type="button" class="btn" onclick="editar({{ acompanhamento.id }})"><i class="fas fa-edit"></i></button>
+
+                                                    <button type="button" class="btn"  id="impressao" onclick="abrirPrint({{ acompanhamento.id }})"><i class="fas fa-print"></i></button>
+                                                </td>
+                                                <td>{{ acompanhamento.tipoOcorrencia.nome }}</td>
+                                                {% if tipoExibicao == 'D' %}
+                                                <td>{{ acompanhamento.descricao|safe }}</td>
+                                                {% endif %}
+                                                <td>{{ acompanhamento.dataAtendimento|date:'d/m/y' }}-{{ acompanhamento.dataOcorrencia|date:'H:i' }}</td>
+                                                <td>{{ acompanhamento.dataAtestadoInicio|date:'d/m/y' }} - {{ acompanhamento.dataAtestadoFim|date:'d/m/Y' }}</td>
+                                                <td>{% if acompanhamento.anexo != "" %}<a href="{{ acompanhamento.anexo.url }}" target="_blank"><i class="fas fa-paperclip"></i></a>{% endif %}</td>
+                                                <td>{{ acompanhamento.atendimento.nome }}</td>
+                                            </tr>
+                                            <!-- Button trigger modal -->
+                                            <!-- Modal -->
+                                            <div class="modal fade" id="myModal{{acompanhamento.id}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                        <h4 class="modal-title" id="myModalLabel">Ocorrência</h4>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                        {{ acompanhamento.descricao }}
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>                     
+                                        {% empty %}
+                                            <li>Sem itens na lista.</li>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% include 'layouts/paginacao.html' %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- [ stiped-table ] end -->
+            </div>
+            <!-- [ Main Content ] end -->
+        </div>
+    </section>
+    <!-- [ Main Content ] end -->
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script>
+
+$("#paevsSim").click(function()
+{
+    document.location.href = "/pedagogico/updateSimPAEVS/{{ aluno.id }}";
+});
+$("#paevsNao").click(function()
+{
+    document.location.href = "/pedagogico/updateNaoPAEVS/{{ aluno.id }}";
+});
+$("#simplificado").click(function()
+{
+    document.location.href = "/pedagogico/listAcompanhamentoPedagogico/{{ aluno.id }}";
+});
+$("#detalhado").click(function()
+{
+    document.location.href = "/pedagogico/listAcompanhamentoPedagogicoDetalhado/{{ aluno.id }}";
+});
+
+function editar(id_acompanhamento){
+    document.location.href = "/pedagogico/updateParecerAluno/"+id_acompanhamento;
+};
+
+function abrirPrint(id_acompanhamento){
+    window.open( "/pedagogico/printAcompanhamentoPedagogico/{{aluno.id}}/"+id_acompanhamento);
+};
+
+function abrirRelatorioPrint(){
+    var sel = document.formSelect.tipoOcorrencia.value;
+
+    window.open( "/pedagogico/printRelatorioAcompanhamentoPedagogico/{{aluno.id}}/"+sel);
+}
+</script>
+
+{% endblock javascripts %}

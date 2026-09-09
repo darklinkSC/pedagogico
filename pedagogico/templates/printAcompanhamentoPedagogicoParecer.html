@@ -1,0 +1,191 @@
+{% extends "layouts/basePrint.html" %}
+
+{% block title %}Boletim Escolar{% endblock %} 
+
+{% block stylesheets %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 12pt;
+        color: #333;
+    }
+    .boletim-container {
+        width: 100%;
+        max-width: 800px; /* Limita a largura para melhor visualização em tela */
+        margin: 0 auto;
+        border: 1px solid #ccc;
+        padding: 20px;
+    }
+    .boletim-header {
+        text-align: center;
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+    .boletim-header img.logo {
+        height: 50px;
+        margin-bottom: 15px;
+    }
+    .boletim-header h2, .boletim-header h3 {
+        margin: 0;
+        font-weight: normal;
+    }
+    .aluno-info-section {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 20px;
+        background-color: #f9f9f9;
+    }
+    .aluno-info-section .aluno-foto {
+        margin-right: 20px;
+        flex-shrink: 0; /* Impede que a foto seja redimensionada */
+    }
+    .aluno-info-section .aluno-foto img {
+        width: 100px;
+        height: 100px;
+        border-radius: 5px;
+        object-fit: cover;
+    }
+    .aluno-info-section .aluno-dados {
+        flex-grow: 1;
+    }
+    .aluno-info-section p {
+        margin: 5px 0;
+    }
+    .secao {
+        margin-bottom: 20px;
+    }
+    .secao h5 {
+        background-color: #333;
+        color: white;
+        padding: 8px 10px;
+        margin-top: 0;
+    }
+    .tabela-notas {
+        width: 90%; /* Ajuste a largura da tabela */
+        margin: 0 auto; /* Centraliza a tabela */
+        border-collapse: collapse;
+    }
+    .tabela-notas th, .tabela-notas td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+    }
+    .tabela-notas thead th {
+        background-color: #eee;
+    }
+    .tabela-notas tbody tr:nth-child(odd) {
+        background-color: #f7f7f7;
+    }
+    /* Estilo específico para impressão */
+    @media print {
+        body {
+            font-size: 10pt; /* Reduz a fonte para caber mais conteúdo */
+        }
+        .boletim-container {
+            border: none;
+            padding: 0;
+            max-width: none;
+        }
+        .pcoded-main-container-print {
+            padding: 0;
+        }
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block content %} 
+    <section class="pcoded-main-container-print">
+        <div class="boletim-container">
+            
+            <div class="boletim-header">
+                <img src="/static/images/ararangua_horizontal_marca2015.png" class="logo">
+                <h2>Parecer</h2>
+                <h4>Período: <span id="periodo-impresso"></span></h4>
+            </div>
+            
+            <div class="aluno-info-section">
+                {% if aluno.foto != '' %}
+                <div class="aluno-foto">
+                    <img src="{{ aluno.foto.url }}" class="img-radius">
+                </div>
+                {% endif %}
+                <div class="aluno-dados">
+                    <p><strong>Nome:</strong> {{ aluno.nome }}</p>
+                    {% if aluno.tipoPessoa == 'A' %}
+                    <p><strong>Curso:</strong> {{ curso.nome }}</p>
+                    {% endif %}
+                    <p><strong>Matrícula:</strong> {{ aluno.matricula }}</p>
+                </div>
+            </div>
+
+            <div class="secao parecer-section">
+                <h5>Parecer Descritivo</h5>
+                <p>{{ acompanhamentoPedagogico.descricao|safe }}</p>
+            </div>
+
+            <div class="secao tabela-desempenho">
+                <h5>Desempenho por Unidade Curricular</h5>
+                <table class="tabela-notas">
+                    <thead>
+                        <tr>
+                            <th>Unidade Curricular</th>
+                            <th>Conceito Parcial</th>
+                            <th>Faltas %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for conselho in lista %}
+                            <tr>
+                                <td>{{ conselho.unidadeCurricular }}</td>
+                                <td>{{ conselho.notaFinal  }}</td>
+                                <td>{{ conselho.percentualFalta|default:0 }}%</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3">Nenhum dado de desempenho disponível.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </section>
+
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        // Objeto Date para a data atual
+        const hoje = new Date();
+
+        // Nomes dos meses em português
+        const meses = [
+            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+        ];
+        
+        // Pega o nome do mês e o ano
+        const nomeMes = meses[hoje.getMonth()];
+        const ano = hoje.getFullYear();
+        
+        // Formata a string do período
+        const periodo = `${nomeMes}/${ano}`;
+
+        // Encontra o elemento e insere o período
+        const elementoPeriodo = document.getElementById('periodo-impresso');
+        if (elementoPeriodo) {
+            elementoPeriodo.textContent = periodo;
+        }
+    });
+    window.print();
+    function closeWindow() {
+        setTimeout(function() { window.close(); }, 50);
+    }
+    window.onafterprint = closeWindow;
+</script>
+{% endblock javascripts %}

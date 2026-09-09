@@ -1,0 +1,125 @@
+{% extends "layouts/base.html" %}
+
+{% load bootstrap %}
+
+{% block title %} UI Tables {% endblock %} 
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}	
+    <!-- [ Main Content ] start -->
+    <section class="pcoded-main-container">
+        <div class="pcoded-content">
+            <!-- [ breadcrumb ] start -->
+            <div class="page-header">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col-md-12">
+                            <div class="page-header-title">
+                                <h5 class="m-b-10">Importar Dados</h5>
+                            </div>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item"><a href=""><i class="feather icon-home"></i></a></li>
+                                <li class="breadcrumb-item"><a href="/pedagogico/importarDados">Importar Dados Pedagógico</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ breadcrumb ] end -->
+            <!-- [ Main Content ] start -->
+            <div class="row">            
+                <!-- [ stiped-table ] start -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Importação</h5>
+                        </div>
+                        <div class="card-header">
+                            <div class="col-md-6">
+                                <div class="card bg-c-red order-card">
+                                    <div class="card-body">
+                                        <p class="m-b-0"><a href="{% url 'pedagogico:importAluno' %}" style="color:#fff"><i class="fa fa-user" aria-hidden="true"></i>&nbsp;&nbsp;Importar Alunos</a></p>
+                                    </div>
+                                </div>
+                                <div class="card bg-c-red order-card">
+                                    <div class="card-body">
+                                        <p class="m-b-0"><a href="{% url 'pedagogico:importUnidadeCurricular' %}" style="color:#fff"><i class="fa fa-user" aria-hidden="true"></i>&nbsp;&nbsp;Importar Matrículas</a></p>
+                                    </div>
+                                </div>
+                                <div class="card bg-c-red order-card">
+                                    <div class="card-body">
+                                        <p class="m-b-0"><a href="{% url 'pedagogico:importConselhoClasse' %}" style="color:#fff"><i class="fa fa-user" aria-hidden="true"></i>&nbsp;&nbsp;Importar Conselho Classe</a></p>
+                                    </div>
+                                </div>
+                                <div class="card bg-c-blue order-card">
+                                    <div class="card-body">
+                                        <p class="m-b-0"><a href="{% url 'pedagogico:listAlunosImportados' %}" style="color:#fff"><i class="fa fa-list" aria-hidden="true"></i>&nbsp;&nbsp;Listar Alunos Importados</a></p>
+                                    </div>
+                                </div>
+                                <div class="card bg-c-blue order-card">
+                                    <div class="card-body">
+                                        <p class="m-b-0"><a href="{% url 'pedagogico:listMatriculasImportadas' %}" style="color:#fff"><i class="fa fa-list" aria-hidden="true"></i>&nbsp;&nbsp;Listar Matrículas Importadas</a></p>
+                                    </div>
+                                </div>
+                                <div class="card bg-c-green order-card">
+                                    <div class="card-body">
+                                        <p class="m-b-0"><a href="{% url 'pedagogico:converterBaseAlunos' %}" style="color:#fff"><i class="fa fa-user" aria-hidden="true"></i>&nbsp;&nbsp;Converter Alunos</a></p>
+                                    </div>
+                                </div>
+                                <div class="card bg-c-green order-card">
+                                    <div class="card-body">
+                                        <p class="m-b-0"><a href="{% url 'pedagogico:converterBaseCurso' %}" style="color:#fff"><i class="fa fa-user" aria-hidden="true"></i>&nbsp;&nbsp;Converter Cursos</a></p>
+                                    </div>
+                                </div>
+                                <div class="card bg-c-green order-card">
+                                    <div class="card-body">
+                                        <p class="m-b-0"><a href="{% url 'pedagogico:converterBaseUnidadeCurricular' %}" style="color:#fff"><i class="fa fa-user" aria-hidden="true"></i>&nbsp;&nbsp;Converter Unidade Curriculares</a></p>
+                                    </div>
+                                </div>
+                                <div class="card bg-c-green order-card">
+                                    <div class="card-body">
+                                        <p class="m-b-0">
+                                            <a href="{% url 'pedagogico:atualizarStatusTrocaAno' %}" style="color:#fff" onclick="return confirm('ATENÇÃO: Deseja realmente trocar o ano? Isso atualizará o status de TODAS as matrículas para encerrado (C). Esta ação não pode ser desfeita!')">
+                                                <i class="fa fa-user" aria-hidden="true"></i>&nbsp;&nbsp;Trocar Ano
+                                            </a>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="card bg-c-green order-card">
+                                    <div class="card-body">
+                                        <p class="m-b-0"><a href="{% url 'pedagogico:converterBaseMatricula' %}" style="color:#fff"><i class="fa fa-user" aria-hidden="true"></i>&nbsp;&nbsp;Converter Matrícula</a></p>
+                                    </div>
+                                </div>
+                                <div class="card bg-c-green order-card">
+                                    <div class="card-body">
+                                        <p class="m-b-0">
+                                            <a href="{% url 'pedagogico:converterBaseTurma' %}" style="color:#fff">
+                                                <i class="fa fa-users" aria-hidden="true"></i>&nbsp;&nbsp;Converter Turmas
+                                            </a>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>   
+                        </div>   
+                    </div>
+                </div>
+                <!-- [ stiped-table ] end -->
+            </div>
+            <!-- [ Main Content ] end -->
+        </div>
+    </section>
+    <!-- [ Main Content ] end -->
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+$("#addSave").click(function()
+{
+    document.location.href = "/geral/addGrupoTrabalho";
+});
+</script>
+{% endblock javascripts %}

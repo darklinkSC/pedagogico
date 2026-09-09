@@ -1,0 +1,67 @@
+{% extends "layouts/base.html" %}
+
+{% block content %} 
+    <section class="pcoded-main-container">
+        <div class="pcoded-content">
+            <div class="row">
+                {% include "layouts/templateMenuAcompanhamento.html" %} 
+
+                <div class="col-xl-12">
+                    {% if lista %}
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5>
+                                Alunos da Turma 
+                                <span class="badge badge-light-primary ml-2">{{ total }} Alunos</span>
+                            </h5>
+                            <div>
+                                <a href="{% url 'pedagogico:acompanhamentoPedagogicoTurma' %}" class="btn btn-sm btn-outline-secondary mr-2">
+                                    <i class="feather icon-arrow-left"></i> Voltar
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Nome do Aluno</th>
+                                            <th>E-mail</th>
+                                            <th>Telefone</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in lista %}
+                                            <tr>
+                                                <td>
+                                                    <a href="{% url 'pedagogico:listAcompanhamentoPedagogico' item.aluno__id %}">
+                                                        <i class="feather icon-edit text-primary"></i>
+                                                    </a>
+                                                </td>
+                                                <td>({{ item.aluno__matricula }})&nbsp;{{ item.aluno__nome }}</td>
+                                                <td>{{ item.aluno__email|default:"-" }}</td>
+                                                <td>{{ item.aluno__telefone|default:"-" }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <p class="mb-3">Nenhum aluno encontrado para os critérios selecionados.</p>
+                            <a href="{% url 'pedagogico:acompanhamentoPedagogicoTurma' %}" class="btn btn-primary">
+                                <i class="feather icon-arrow-left"></i> Voltar para Lista de Turmas
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock content %}

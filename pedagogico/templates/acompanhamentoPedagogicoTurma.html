@@ -1,0 +1,106 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Tables {% endblock %} 
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}	
+    <!-- [ Main Content ] start -->
+    <section class="pcoded-main-container">
+        <div class="pcoded-content">
+            <!-- [ breadcrumb ] start -->
+            <div class="page-header">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col-md-12">
+                            <div class="page-header-title">
+                                <h5 class="m-b-10">Acompanhamento Pedagógico de Turmas</h5>
+                            </div>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
+                                <li class="breadcrumb-item"><a href="#!">Acompanhamento Pedagógico de Turmas</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ breadcrumb ] end -->
+            <!-- [ Main Content ] start -->
+            <div class="row">
+                <!-- [ opcoes do menu] -->
+                {% include "layouts/templateMenuAcompanhamento.html" %} 
+                <!-- [ stiped-table ] start -->
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Acompanhamento Pedagógico {{ tipoPessoa }}</h5>
+                            <input type="radio" id="aluno" name="choice" value="A" />
+                            <label for="male">Alunos</label>
+                            <input type="radio" id="servidor" name="choice" value="S" />
+                            <label for="female">Servidores</label>
+                            <input type="radio" id="turma" name="choice" value="T" />
+                            <label for="other">Turmas</label>
+                        </div>
+                        <div class="card-header">
+                            <form method="GET">
+                                <div class="input-group-prepend">
+                                    <input type="text" class="form-control" placeholder="" name="search" id="search" width="150">&nbsp;&nbsp;&nbsp;
+                                    <button class="btn btn-primary" type="submit" id="button-addon1"><i class="feather mr-2 icon-search"></i>Buscar</button>&nbsp;&nbsp;&nbsp;
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Nome</th>
+                                            <th>Curso</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Fazendo LOOP para buscar os servidores -->
+                                        {% for turma in lista %}
+                                            <tr>
+                                                <td><a href="{% url 'pedagogico:listarTurma' curso_id=turma.curso_id periodo=turma.periodo %}"><i class="feather icon-list" title="Listar Alunos da Turma"></i></a></td>
+                                                <td><strong>{{ turma.sigla_periodo }}</strong></td>
+                                                <td>{{ turma.curso }}</td>
+                                            </tr>
+                                        {% empty %}
+                                            <li>Sem itens na lista.</li>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% include 'layouts/paginacao.html' %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- [ stiped-table ] end -->
+            </div>
+            <!-- [ Main Content ] end -->
+        </div>
+    </section>
+    <!-- [ Main Content ] end -->
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+$("#aluno").click(function()
+{
+    document.location.href = "/pedagogico/acompanhamentoPedagogico";
+});
+$("#servidor").click(function()
+{
+    document.location.href = "/pedagogico/acompanhamentoPedagogicoServidor";
+});
+$("#turma").click(function()
+{
+    document.location.href = "/pedagogico/acompanhamentoPedagogicoTurma";
+});
+</script>
+{% endblock javascripts %}

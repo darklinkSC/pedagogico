@@ -1,0 +1,9 @@
+# Pasta de uploads de mídia do Django (ajuste o nome se for diferente)
+core/media/
+
+# Ignorar extensões de imagem e arquivos binários soltos
+#*.jpg#
+#*.jpeg
+#*.png
+#*.gif
+#*.webp

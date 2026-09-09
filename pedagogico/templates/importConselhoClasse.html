@@ -1,0 +1,60 @@
+{% extends "layouts/base.html" %}
+
+{% load bootstrap %}
+
+{% block title %}{% endblock %} 
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}	
+<section class="pcoded-main-container">
+    <div class="pcoded-content">
+        <!-- [ breadcrumb ] start -->
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <div class="page-header-title">
+                            <h5 class="m-b-10">Importar Notas Conselho Classe</h5>
+                        </div>
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
+                            <li class="breadcrumb-item"><a href="/pedagogico/importarDados">Importar Notas Conselho Classe</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">   
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="page-header-title">
+                        <h5 class="m-b-10">Importar Notas Conselho Classe</h5>
+                    </div>
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div>
+                <!--                | means OR operator-->
+                                <strong>{{message|safe}}</strong>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                    {{order}}
+                    <form action="" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}<br>
+                        <label for="file1">Escolha o arquivo</label><br>
+                        <input type="file" id="file1" name="file"><br>
+                        <small>Apenas arquivos CSV </small><br>
+                        <button type="submit" class="btn-primary">Upload</button>
+                    </form>
+                    {% endif %}
+                    {% for profile in profiles %}
+                    {{profile.name}}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}	

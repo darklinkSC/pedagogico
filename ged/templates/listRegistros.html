@@ -1,0 +1,144 @@
+{% extends "layouts/base.html" %}
+
+{% load bootstrap %}
+
+{% block title %} UI Tables {% endblock %} 
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}	
+    <!-- [ Main Content ] start -->
+    <section class="pcoded-main-container">
+        <div class="pcoded-content">
+            <!-- [ breadcrumb ] start -->
+            <div class="page-header">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col-md-12">
+                            <div class="page-header-title">
+                                <h5 class="m-b-10">Grupo Trabalho {{ grupoTrabalho.nome }}</h5>
+                            </div>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item"><a href=""><i class="feather icon-home"></i></a></li>
+                                <li class="breadcrumb-item"><a href="/geral/listGTRegistros">Grupo Trabalho</a></li>
+                                <li class="breadcrumb-item"><a href="#!">Registros</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ breadcrumb ] end -->
+            <!-- [ Main Content ] start -->
+            <div class="row">            
+                <!-- [ stiped-table ] start -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="row-md-6">
+                                <button type="button" class="btn btn-primary" title="Adicionar novo Registro" name="adicionar" id="adicionar"><i class="fas fa-plus-square"></i>&nbsp;&nbsp;Adicionar</button>
+                                &nbsp;&nbsp;&nbsp;<button type="button" class="btn btn-secondary" title="Importar Registro"><i class="fas fa-cloud-upload-alt"></i>&nbsp;&nbsp;Importar</button>
+                            </div>
+                        </div>                  
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Histórico de Registros</h5>
+                        </div>
+                        <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Titulo</th>
+                                            <th>Data Reunião</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Fazendo LOOP para buscar os servidores -->
+                                        {% for obj in lista %}
+                                            <tr>
+                                                <td><a href="#" id="delete"><i class="feather icon-home"></i></a>
+                                                </td>
+                                                <td>{{ obj.titulo }}</td>
+                                                <td>{{ obj.dataReuniao|date:'d/m/Y'  }}</td>
+                                            </tr>
+                                        {% empty %}
+                                            <li>Sem itens na lista.</li>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% include 'layouts/paginacao.html' %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Membros Grupo de Trabalho</h5>
+                        </div>
+                        <div class="card-header">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Participantes do GT -->
+                                    {% for obj in participantes %}
+                                        <tr>
+                                            <td>{{ obj.pessoa.nome }}</td>
+                                        </tr>
+                                    {% empty %}
+                                        <li>Sem itens na lista.</li>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>                  
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Marcadores</h5>
+                        </div>
+                        <div class="card-header">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Participantes do GT -->
+                                    {% for obj in marcadores %}
+                                        <tr>
+                                            <td>{{ obj.descricao }}</td>
+                                        </tr>
+                                    {% empty %}
+                                        <li>Sem itens na lista.</li>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>                  
+                    </div>
+                </div>
+                <!-- [ stiped-table ] end -->
+            </div>
+            <!-- [ Main Content ] end -->
+        </div>
+    </section>
+    <!-- [ Main Content ] end -->
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+$("#adicionar").click(function()
+{
+    document.location.href = "{% url 'ged:addRegistro' grupoTrabalho.id %}";
+});
+</script>
+{% endblock javascripts %}

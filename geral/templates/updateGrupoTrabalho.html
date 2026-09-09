@@ -1,0 +1,53 @@
+{% extends "layouts/base.html" %}
+
+{% load bootstrap %}
+
+{% block title %}{% endblock %} 
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}	
+<section class="pcoded-main-container">
+    <div class="pcoded-content">
+        <!-- [ breadcrumb ] start -->
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <div class="page-header-title">
+                            <h5 class="m-b-10">Servidores</h5>
+                        </div>
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href=""><i class="feather icon-home"></i></a></li>
+                            <li class="breadcrumb-item"><a href="/geral/listGrupoTrabalho">Listar Grupo Trabalho</a></li>
+                            <li class="breadcrumb-item"><a href="#!">Editar Grupo Trabalho</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [ breadcrumb ] end -->
+        <!-- [ Main Content ] start -->
+        <div class="container">            
+            <!-- [ stiped-table ] start -->
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Editar {{grupoTrabalho.nome}}</h4>
+                        <hr>
+                        <form action="{% url 'geral:updateGrupoTrabalho' grupoTrabalho.id %}" method="POST">
+                            {% csrf_token %}
+                            {{ form|bootstrap }}
+                            <input type="submit" class="btn btn-primary" value="Salvar">
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- [ stiped-table ] end -->
+        </div>
+        <!-- [ Main Content ] end -->
+    </div>
+</section>
+<!-- [ Main Content ] end -->
+{% endblock content %}

@@ -1,0 +1,110 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Tables {% endblock %} 
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}	
+    <!-- [ Main Content ] start -->
+    <section class="pcoded-main-container">
+        <div class="pcoded-content">
+            <!-- [ breadcrumb ] start -->
+            <div class="page-header">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col-md-12">
+                            <div class="page-header-title">
+                                <h5 class="m-b-10">Acompanhamento Pedagógico de Alunos</h5>
+                            </div>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
+                                <li class="breadcrumb-item"><a href="/pedagogico/acompanhamentoPedagogico">Acompanhamento Pedagógico de Alunos</a></li>
+                                <li class="breadcrumb-item"><a href="#!">Ultimos Atendimentos</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ breadcrumb ] end -->
+            <!-- [ Main Content ] start -->
+            <div class="row">
+                <!-- order-card start -->
+                {% include "layouts/templateMenuAcompanhamento.html" %} 
+                <!-- [ stiped-table ] start -->
+                <!-- [ stiped-table ] start -->
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Ultimos Atendimentos</h5>
+                        </div>
+                        <div class="card-header">
+                            <form method="GET">
+                                <div class="input-group-prepend">
+                                    Tipo de Ocorrência&nbsp;&nbsp;&nbsp;
+                                    <!-- Fazendo LOOP para Tipo Ocorrencia -->
+                                    <select name="tipoOcorrencia" class="form-control" style="width: 500px;">
+                                        <option value="" selected>---------</option>
+                                    {% for tipoOcorrencia in listTipoOcorrencia %}
+                                        <option value="{{ tipoOcorrencia.id }}">{{ tipoOcorrencia.nome }}</option>
+                                    {% endfor %}
+                                    </select>
+                                </div><br>
+                                <div class="input-group-prepend">
+                                    Nome Aluno&nbsp;&nbsp;&nbsp; <input type="text" class="form-control" placeholder="" name="search" id="search" style="width: 500px;">&nbsp;&nbsp;&nbsp;
+                                    <button class="btn btn-primary" type="submit" id="button-addon1"><i class="feather mr-2 icon-search"></i>Buscar</button>&nbsp;&nbsp;&nbsp;
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Nome</th>
+                                            <th>Tipo</th>
+                                            <th>Ocorrência</th>
+                                            <th>Data Atendimento</th>
+                                            <th>Atendido Por</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Fazendo LOOP para buscar os servidores -->
+                                        {% for ua in lista %}
+                                            <tr>
+                                                <td><a href="{% url 'pedagogico:listAcompanhamentoPedagogico' ua.aluno.id %}"><i class="feather icon-edit" title="Informações do Aluno"></i></a></td>
+                                                <td>{{ ua.aluno.nome }}</td>
+                                                <td>{% if ua.aluno.tipoPessoa == 'A' %}Aluno{% else %}Servidor{% endif %}</td>
+                                                <td>{{ ua.tipoOcorrencia.nome }}</td>
+                                                <td>{{ ua.dataAtendimento|date:'d/m/Y' }}</td>
+                                                <td>{{ ua.atendimento.nome }}</td>
+                                            </tr>
+                                        {% empty %}
+                                            <li>Sem itens na lista.</li>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% include 'layouts/paginacao.html' %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- [ stiped-table ] end -->
+            </div>
+            <!-- [ Main Content ] end -->
+        </div>
+    </section>
+    <!-- [ Main Content ] end -->
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+$("#addAluno").click(function()
+{
+    document.location.href = "/pedagogico/addAluno";
+});
+</script>
+{% endblock javascripts %}

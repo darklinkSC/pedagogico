@@ -1,0 +1,41 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} 404 Error {% endblock %}
+
+{% block content %} 
+
+	<!-- [ auth-signin ] start -->
+	<div class="auth-wrapper">
+		<div class="auth-content">
+			<div class="card">
+				<div class="row align-items-center text-center">
+					<div class="col-md-12">
+						<div class="card-body">
+							<h4 class="mb-3 f-w-400">
+                                Proibido Acesso 
+                            </h4>
+                            <p class="mb-2 text-muted">
+                                Você não tem permissão para acessar este aplicativo.
+                            </p>
+
+                            <br />
+                            
+                            <p class="mb-2 text-muted">
+                                Dúvidas entrar em contato com o Administrador.
+                            </p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- [ auth-signin ] end -->
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+	<script src="/static/assets/js/waves.min.js"></script>
+
+{% endblock javascripts %} 
