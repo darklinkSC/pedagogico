@@ -1,0 +1,170 @@
+{% extends "layouts/base.html" %}
+{% load conselho_tags %}
+
+{% block stylesheets %}
+<style>
+    .save-status {
+        font-size: 0.75rem;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    .save-status.salvando { color: #ff9800; }
+    .save-status.sucesso { color: #28a745; }
+    .save-status.erro { color: #dc3545; }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<section class="pcoded-main-container">
+    <div class="pcoded-content">
+        <div class="page-header">
+            <div class="page-block">
+                <h5>Lançamento de Pareceres #{{ sessao.id }} - {{ sessao.turma.nome }}</h5>
+                <p class="text-muted">Etapa: {{ sessao.periodoConselho.nome|default:"Geral" }} | Ano: {{ sessao.ano }} | Data: {{ sessao.dataRegistro|date:"d/m/Y" }}</p>
+            </div>
+        </div>
+
+        <form method="POST" id="formPareceres">
+            {% csrf_token %}
+            <!-- Pareceres Individuais -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Pareceres dos Alunos</h5>
+                    <small class="text-muted"><i class="feather icon-check"></i> O parecer salva automaticamente ao sair do campo.</small>
+                </div>
+                <div class="card-body table-border-style">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th style="width: 25%;">Aluno</th>
+                                    <th style="width: 10%; text-align: center;">Atestados</th>
+                                    <th style="width: 65%;">Parecer Individual</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in dados_alunos %}
+                                <tr>
+                                    <td>
+                                        <strong title="{{ item.aluno.nome }}">{{ item.aluno.nome|nome_curto }}</strong><br>
+                                        <small class="text-muted">Matrícula: {{ item.aluno.matricula }}</small><br>
+
+                                        <div class="mt-1">
+                                            <a href="{% url 'pedagogico:listAcompanhamentoPedagogico' item.aluno.id %}" target="_blank" class="badge badge-light-info mr-1">
+                                                <i class="feather icon-external-link"></i> Ficha
+                                            </a>
+
+                                            {% if item.acompanhamento_id %}
+                                                <!-- Botão que chama a URL: /pedagogico/printAcompanhamentoPedagogico/ID_ALUNO/ID_ACOMPANHAMENTO -->
+                                                <a href="{% url 'pedagogico:printAcompanhamentoPedagogico' item.aluno.id item.acompanhamento_id %}"
+                                                   target="_blank"
+                                                   class="badge badge-light-secondary"
+                                                   title="Imprimir Parecer">
+                                                    <i class="feather icon-printer"></i> Imprimir
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        {% if item.atestados %}
+                                            <span class="badge badge-danger">{{ item.atestados|length }} atest.</span>
+                                        {% else %}
+                                            <span class="badge badge-light-secondary">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-end mb-1">
+                                            <span class="save-status" id="status-aluno-{{ item.aluno.id }}"></span>
+                                        </div>
+                                        <textarea
+                                            name="parecer_{{ item.aluno.id }}"
+                                            class="form-control {% if sessao.finalizado != 'S' %}auto-save-parecer{% endif %}"
+                                            data-aluno-id="{{ item.aluno.id }}"
+                                            rows="3"
+                                            placeholder="Digite o parecer individual..."
+                                            {% if sessao.finalizado == 'S' %}readonly style="background-color: #f8f9fa;"{% endif %}>{{ item.parecer }}</textarea>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">Nenhum aluno ativo encontrado nesta turma.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4 text-right">
+                        <a href="{% url 'pedagogico:listagemPareceres' %}" class="btn btn-secondary mr-2">Voltar</a>
+                        {% if sessao.finalizado == 'S' %}
+                            <span class="badge badge-success p-2 font-weight-bold"><i class="feather icon-lock"></i> Finalizado (Apenas Leitura)</span>
+                        {% else %}
+                            <button type="submit" name="acao" value="salvar" class="btn btn-secondary mr-2">
+                                <i class="feather icon-save"></i> Salvar Rascunho
+                            </button>
+                            <button type="submit" name="acao" value="finalizar" class="btn btn-success" onclick="return confirm('Deseja consolidar e lançar todos os pareceres na ficha dos alunos?')">
+                                <i class="feather icon-check-circle"></i> Finalizar e Lançar nas Fichas
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const submitUrl = window.location.href;
+
+        function enviarAutosave(formData, statusElement) {
+            statusElement.textContent = "Salvando...";
+            statusElement.className = "save-status salvando";
+
+            fetch(submitUrl, {
+                method: "POST",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": csrfToken
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "ok") {
+                    statusElement.textContent = "Salvo ✔";
+                    statusElement.className = "save-status sucesso";
+                    setTimeout(() => { statusElement.textContent = ""; }, 2500);
+                } else {
+                    statusElement.textContent = "Erro ✖";
+                    statusElement.className = "save-status erro";
+                }
+            })
+            .catch(() => {
+                statusElement.textContent = "Erro conexão ✖";
+                statusElement.className = "save-status erro";
+            });
+        }
+
+        document.querySelectorAll(".auto-save-parecer").forEach(campo => {
+            let valorAntigo = campo.value;
+            campo.addEventListener("blur", function() {
+                const valorAtual = this.value;
+                if (valorAtual !== valorAntigo) {
+                    const alunoId = this.getAttribute("data-aluno-id");
+                    const statusEl = document.getElementById(`status-aluno-${alunoId}`);
+                    const formData = new FormData();
+                    formData.append("is_ajax", "1");
+                    formData.append("aluno_id", alunoId);
+                    formData.append("parecer", valorAtual);
+                    enviarAutosave(formData, statusEl);
+                    valorAntigo = valorAtual;
+                }
+            });
+        });
+    });
+</script>
+{% endblock javascripts %}

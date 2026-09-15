@@ -306,3 +306,54 @@ class ConselhoClasseAluno(models.Model):
 
     def __str__(self):
         return f"{self.aluno.nome} - Conselho #{self.conselho.id}"
+
+class SessaoParecerTurma(models.Model):
+    """
+    Sessão de lançamento de pareceres de uma turma (sem exibição de notas).
+    """
+    turma = models.ForeignKey(Turma, on_delete=models.CASCADE, verbose_name="Turma")
+    ano = models.IntegerField(u"Ano Letivo", default=datetime.now().year)
+    periodoConselho = models.ForeignKey(
+        PeriodoConselho,
+        on_delete=models.PROTECT,
+        verbose_name="Etapa / Período",
+        null=True, blank=True
+    )
+    dataRegistro = models.DateField(u"Data de Registro", default=datetime.now)
+    observacaoGeral = models.TextField(u"Observação Geral da Turma", null=True, blank=True)
+    finalizado = models.CharField(u"Finalizado", max_length=1, choices=SIM_NAO, default="N")
+    status = models.CharField(u"Status", max_length=1, default='A', choices=(('A', 'Ativo'), ('E', 'Excluído')))
+    responsavel = models.ForeignKey(
+        Pessoa,
+        on_delete=models.PROTECT,
+        related_name="sessoes_pareceres_criadas",
+        verbose_name="Responsável"
+    )
+    criadoEm = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "sessao_parecer_turma"
+        ordering = ['-ano', '-dataRegistro', '-id']
+
+    def __str__(self):
+        return f"Pareceres: {self.turma.nome} ({self.ano})"
+
+
+class ItemParecerAluno(models.Model):
+    """
+    Parecer individual de cada aluno digitado nesta sessão.
+    """
+    sessao = models.ForeignKey(SessaoParecerTurma, on_delete=models.CASCADE, related_name="alunos_parecer")
+    aluno = models.ForeignKey(Pessoa, on_delete=models.CASCADE, related_name="pareceres_recebidos")
+    parecer = models.TextField(u"Parecer do Aluno", null=True, blank=True)
+    acompanhamentoGerado = models.OneToOneField(
+        AcompanhamentoPedagogicoAluno,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="origem_sessao_parecer"
+    )
+
+    class Meta:
+        db_table = "item_parecer_aluno"
+        unique_together = (("sessao", "aluno"),)

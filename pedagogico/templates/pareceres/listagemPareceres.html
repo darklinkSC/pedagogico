@@ -1,0 +1,83 @@
+{% extends "layouts/base.html" %}
+{% block content %}
+<section class="pcoded-main-container">
+    <div class="pcoded-content">
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <h5>Lançamento de Pareceres das Turmas</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Histórico de Lançamentos</h5>
+                <a href="{% url 'pedagogico:criarSessaoParecer' %}" class="btn btn-primary">
+                    <i class="feather icon-plus"></i> Novo Lançamento de Parecer
+                </a>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="form-inline mb-3">
+                    <input type="number" name="ano" class="form-control mr-2" placeholder="Ano (ex: 2026)" value="{{ ano_filtro|default:'' }}">
+                    <input type="text" name="turma" class="form-control mr-2" placeholder="Nome da Turma" value="{{ turma_filtro|default:'' }}">
+                    <button type="submit" class="btn btn-outline-primary"><i class="feather icon-search"></i> Filtrar</button>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>#ID</th>
+                                <th>Turma</th>
+                                <th>Ano</th>
+                                <th>Etapa</th>
+                                <th>Data</th>
+                                <th>Status</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in lista %}
+                            <tr>
+                                <td><strong>#{{ p.id }}</strong></td>
+                                <td>{{ p.turma.nome }}</td>
+                                <td>{{ p.ano }}</td>
+                                <td>{{ p.periodoConselho.nome|default:"-" }}</td>
+                                <td>{{ p.dataRegistro|date:"d/m/Y" }}</td>
+                                <td>
+                                    {% if p.finalizado == 'S' %}
+                                        <span class="badge badge-success">Finalizado</span>
+                                    {% else %}
+                                        <span class="badge badge-warning">Em Aberto</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'pedagogico:painelParecerTurma' p.id %}" class="btn btn-sm btn-info" title="Abrir Pareceres">
+                                        <i class="feather icon-edit-2"></i> Abrir
+                                    </a>
+                                    {% if p.finalizado != 'S' %}
+                                        <a href="{% url 'pedagogico:excluirSessaoParecer' p.id %}" class="btn btn-sm btn-outline-danger ml-1" title="Excluir" onclick="return confirm('Deseja realmente excluir este lançamento?')">
+                                            <i class="feather icon-trash-2"></i>
+                                        </a>
+                                    {% else %}
+                                        <span class="badge badge-light-secondary ml-1" title="Finalizado"><i class="feather icon-lock"></i></span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">Nenhum lançamento de parecer registrado.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% include 'layouts/paginacao.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

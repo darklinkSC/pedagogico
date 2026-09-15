@@ -1,0 +1,151 @@
+{% extends "layouts/base.html" %}
+{% load conselho_tags %}
+
+{% block stylesheets %}
+<style>
+    .save-status {
+        font-size: 0.75rem;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    .save-status.salvando {
+        color: #ff9800;
+    }
+    .save-status.sucesso {
+        color: #28a745;
+    }
+    .save-status.erro {
+        color: #dc3545;
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<section class="pcoded-main-container">
+    <div class="pcoded-content">
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <h5>Lançamento de Pareceres - Turma: {{ turma.nome }}</h5>
+                        <p class="text-muted">Curso: {{ turma.curso.nome }} | Período: {{ turma.periodo }}ª Fase | Data: {{ data_hoje|date:"d/m/Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" id="formPareceres">
+            {% csrf_token %}
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Pareceres Individuais</h5>
+                    <small class="text-muted"><i class="feather icon-info"></i> O texto salva automaticamente ao sair do campo (ou clique em finalizar para consolidar).</small>
+                </div>
+                <div class="card-body table-border-style">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th style="width: 25%;">Aluno</th>
+                                    <th style="width: 75%;">Parecer Pedagógico</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for aluno in lista_alunos %}
+                                <tr>
+                                    <td>
+                                        <strong title="{{ aluno.nome }}">{{ aluno.nome|nome_curto }}</strong><br>
+                                        <small class="text-muted">Mat: {{ aluno.matricula }}</small><br>
+                                        <a href="{% url 'pedagogico:listAcompanhamentoPedagogico' aluno.id %}" target="_blank" class="badge badge-light-info">
+                                            <i class="feather icon-external-link"></i> Ver Ficha
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-end mb-1">
+                                            <span class="save-status" id="status-aluno-{{ aluno.id }}"></span>
+                                        </div>
+                                        <textarea 
+                                            name="parecer_{{ aluno.id }}" 
+                                            class="form-control auto-save-parecer" 
+                                            data-aluno-id="{{ aluno.id }}" 
+                                            rows="3" 
+                                            placeholder="Digite o parecer deste aluno..."></textarea>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center text-muted">Nenhum aluno ativo encontrado nesta turma.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-4 text-right">
+                        <a href="{% url 'pedagogico:listarTurma' %}" class="btn btn-secondary mr-2">Voltar</a>
+                        <button type="submit" class="btn btn-success" onclick="return confirm('Deseja consolidar e lançar todos os pareceres nas fichas dos alunos?')">
+                            <i class="feather icon-check-circle"></i> Finalizar e Lançar no Acompanhamento
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const submitUrl = window.location.href;
+
+        const camposParecer = document.querySelectorAll(".auto-save-parecer");
+        camposParecer.forEach(campo => {
+            let valorAnterior = campo.value;
+
+            campo.addEventListener("blur", function() {
+                const valorAtual = this.value.trim();
+                if (valorAtual !== valorAnterior && valorAtual !== '') {
+                    const alunoId = this.getAttribute("data-aluno-id");
+                    const statusEl = document.getElementById(`status-aluno-${alunoId}`);
+
+                    statusEl.textContent = "Salvando...";
+                    statusEl.className = "save-status salvando";
+
+                    const formData = new FormData();
+                    formData.append("is_ajax", "1");
+                    formData.append("aluno_id", alunoId);
+                    formData.append("parecer", valorAtual);
+
+                    fetch(submitUrl, {
+                        method: "POST",
+                        headers: {
+                            "X-Requested-With": "XMLHttpRequest",
+                            "X-CSRFToken": csrfToken
+                        },
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === "ok") {
+                            statusEl.textContent = "Salvo ✔";
+                            statusEl.className = "save-status sucesso";
+                            setTimeout(() => { statusEl.textContent = ""; }, 2500);
+                        } else {
+                            statusEl.textContent = "Erro ao salvar ✖";
+                            statusEl.className = "save-status erro";
+                        }
+                    })
+                    .catch(() => {
+                        statusEl.textContent = "Erro de conexão ✖";
+                        statusEl.className = "save-status erro";
+                    });
+
+                    valorAnterior = valorAtual;
+                }
+            });
+        });
+    });
+</script>
+{% endblock javascripts %}

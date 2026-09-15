@@ -9,6 +9,7 @@ from .app import viewAcompanhamentoPedagogico
 from .app import viewAcompanhamentoPedagogicoTurma
 from .app import viewTurma
 from .app import viewConselhoClasse
+from .app import viewParecerTurma
 from wkhtmltopdf.views import PDFTemplateView
 
 app_name="pedagogico"
@@ -83,6 +84,11 @@ urlpatterns = [
     path('pedagogico/conselho/novo/', viewConselhoClasse.criarConselho, name='criarConselho'),
     path('pedagogico/conselho/<int:id>/', viewConselhoClasse.painelConselho, name='painelConselho'),
     path('pedagogico/conselho/<int:id>/excluir/', viewConselhoClasse.excluirConselhoClasse, name='excluirConselhoClasse'),
+    # Pareceres
+    path('pedagogico/pareceres/', viewParecerTurma.listagemPareceres, name='listagemPareceres'),
+    path('pedagogico/pareceres/novo/', viewParecerTurma.criarSessaoParecer, name='criarSessaoParecer'),
+    path('pedagogico/pareceres/<int:id>/', viewParecerTurma.painelParecerTurma, name='painelParecerTurma'),
+    path('pedagogico/pareceres/<int:id>/excluir/', viewParecerTurma.excluirSessaoParecer, name='excluirSessaoParecer'),
     ##### TESTES PARA IA #####
     path('pedagogico/chat-ia/', views.chat_ia_view, name='chat_ia'),
     # Rota para o salvamento definitivo no banco
