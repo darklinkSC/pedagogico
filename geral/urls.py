@@ -15,5 +15,6 @@ urlpatterns = [
     path('geral/participantesGrupoTrabalho/<int:id>/', viewGrupoTrabalho.listParticipantesGrupoTrabalho, name='listParticipantesGrupoTrabalho'),
     path('geral/addParticipantesGrupoTrabalho/<int:id>/', viewGrupoTrabalho.addParticipantesGrupoTrabalho, name='addParticipantesGrupoTrabalho'),
     path('geral/deleteParticipantesGrupoTrabalho/<int:grupoTrabalho>/<int:id>/', viewGrupoTrabalho.deleteParticipantesGrupoTrabalho, name='deleteParticipantesGrupoTrabalho'),
-    path('geral/paginaSemPermissao', views.paginaSemPermissao, name='paginaSemPermissao')
+    path('geral/paginaSemPermissao', views.paginaSemPermissao, name='paginaSemPermissao'),
+    path('logout/', views.user_logout, name='logout'),
 ]

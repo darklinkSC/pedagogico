@@ -1,30 +1,61 @@
 <!-- order-card start -->
-<div class="col-md-6 col-xl-3">
-    <div class="card bg-c-blue order-card">
-        <div class="card-body">
-            <p class="m-b-0"><a href="{% url 'pedagogico:ultimosAtendimentos' %}" style="color:#fff"><i class="fa fa-file-alt" aria-hidden="true"></i>&nbsp;&nbsp;Ultimos Atendimentos</a></p>
+<div class="col-sm-6 col-md-4 col-xl">
+    <div class="card bg-c-blue order-card mb-3">
+        <div class="card-body p-3 text-center">
+            <p class="m-b-0 text-nowrap">
+                <a href="{% url 'pedagogico:ultimosAtendimentos' %}" style="color:#fff">
+                    <i class="fa fa-file-alt" aria-hidden="true"></i>&nbsp;&nbsp;Últimos Atendimentos
+                </a>
+            </p>
         </div>
     </div>
 </div>
-<div class="col-md-6 col-xl-3">
-    <div class="card bg-c-green order-card">
-        <div class="card-body">
-            <p class="m-b-0"><a href="{% url 'pedagogico:listAlunosComPaevs' %}" style="color:#fff"><i class="fa fa-book-open" aria-hidden="true"></i>&nbsp;&nbsp;Alunos com PAEVs</a></p>
+
+<div class="col-sm-6 col-md-4 col-xl">
+    <div class="card bg-c-green order-card mb-3">
+        <div class="card-body p-3 text-center">
+            <p class="m-b-0 text-nowrap">
+                <a href="{% url 'pedagogico:listAlunosComPaevs' %}" style="color:#fff">
+                    <i class="fa fa-book-open" aria-hidden="true"></i>&nbsp;&nbsp;Alunos com PAEVs
+                </a>
+            </p>
         </div>
     </div>
 </div>
-<div class="col-md-6 col-xl-3">
-    <div class="card bg-c-yellow order-card">
-        <div class="card-body">
-            <p class="m-b-0"><a href="{% url 'pedagogico:listAlunosAtestado' %}" style="color:#fff"><i class="fa fa-book-open" aria-hidden="true"></i>&nbsp;&nbsp;Relatórios por Ocorrência</a></p>
+
+<div class="col-sm-6 col-md-4 col-xl">
+    <div class="card bg-c-purple order-card mb-3">
+        <div class="card-body p-3 text-center">
+            <p class="m-b-0 text-nowrap">
+                <a href="{% url 'pedagogico:listAlunosComNecessidades' %}" style="color:#fff">
+                    <i class="fa fa-book-open" aria-hidden="true"></i>&nbsp;&nbsp;Alunos c/ Necessidades
+                </a>
+            </p>
         </div>
     </div>
 </div>
-<div class="col-md-6 col-xl-3">
-    <div class="card bg-c-red order-card">
-        <div class="card-body">
-            <p class="m-b-0"><a href="{% url 'pedagogico:chartAcompanhamento' %}" style="color:#fff"><i class="fa fa-chart-bar" aria-hidden="true"></i>&nbsp;&nbsp;Gráficos</a></p>
+
+<div class="col-sm-6 col-md-4 col-xl">
+    <div class="card bg-c-yellow order-card mb-3">
+        <div class="card-body p-3 text-center">
+            <p class="m-b-0 text-nowrap">
+                <a href="{% url 'pedagogico:listAlunosAtestado' %}" style="color:#fff">
+                    <i class="fa fa-book-open" aria-hidden="true"></i>&nbsp;&nbsp;Relatórios
+                </a>
+            </p>
         </div>
     </div>
-</div>            
-<!-- [ stiped-table ] start -->
+</div>
+
+<div class="col-sm-6 col-md-4 col-xl">
+    <div class="card bg-c-red order-card mb-3">
+        <div class="card-body p-3 text-center">
+            <p class="m-b-0 text-nowrap">
+                <a href="{% url 'pedagogico:chartAcompanhamento' %}" style="color:#fff">
+                    <i class="fa fa-chart-bar" aria-hidden="true"></i>&nbsp;&nbsp;Gráficos
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+<!-- order-card end -->

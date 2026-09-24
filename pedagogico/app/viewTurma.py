@@ -24,7 +24,7 @@ def listTurma(request):
     '''
         Criando paginação
     '''
-    paginas = Paginator(lista, 10)
+    paginas = Paginator(lista, 100)
     page = request.GET.get('page')
     lista = paginas.get_page(page)  
 

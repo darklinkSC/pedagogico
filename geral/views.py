@@ -67,3 +67,6 @@ def updateServidor(request, id):
 def paginaSemPermissao(request):
     return render(request, "paginaSemPermissao.html")    
 
+def user_logout(request):
+    logout(request)
+    return redirect('/login/')

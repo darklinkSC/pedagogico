@@ -62,7 +62,7 @@
                                                     <a href="{% url 'pedagogico:gerenciarAlunosTurma' uc.id %}" class="ml-2" title="Gerenciar Alunos da Turma"><i class="feather icon-users text-primary"></i></a>
                                                 </td>
                                                 <td>{{ uc.nome }}</td>
-                                                <td>{{ uc.curso }}</td>
+                                                <td>{{ uc.curso.id }} - {{ uc.curso }}</td>
                                             </tr>
                                         {% empty %}
                                             <li>Sem itens na lista.</li>

@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from datetime import timedelta
 from datetime import datetime, date
+from django.contrib import messages
 
 from geral.models import TIPO_PESSOA_ALUNO, TIPO_PESSOA_SERVIDOR, STATUS_ATIVO
 from geral.models import Pessoa 
@@ -60,15 +61,127 @@ def acompanhamentoPedagogicoTipoPessoa(request, tipoPessoa):
     return render(request, 'acompanhamentoPedagogico.html', {'lista':lista, 'tipoPessoa':tipoPessoaDescricao})
 
 
-@login_required(login_url="/login/")
 @permission_required(perm='pedagogico.view_acompanhamentopedagogicoaluno', login_url='/geral/paginaSemPermissao')
-def listAcompanhamentoPedagogico(request, id):    
-    return listAcompanhamentoPedagogicoExibicao(request, id, 'S')
+@login_required(login_url="/login/")
+def listAcompanhamentoPedagogico(request, id):
+    aluno = get_object_or_404(Pessoa, id=id)
+    info_aluno, _ = InformacoesAlunos.objects.get_or_create(
+        aluno_id=id,
+        defaults={'paevs': 'N', 'deficiencia': 'N'}
+    )
+    acompanhamentos = AcompanhamentoPedagogicoAluno.objects.filter(
+        aluno=aluno
+    ).exclude(status='E').select_related('tipoOcorrencia', 'atendimento').order_by('-dataAtendimento', '-id')
+
+    tipo_filtro = request.GET.get('tipo_atendimento')
+    if tipo_filtro:
+        acompanhamentos = acompanhamentos.filter(tipoOcorrencia_id=tipo_filtro)
+
+    tipos_ocorrencia = TipoOcorrencia.objects.all().order_by('nome')
+
+    return render(request, "listAcompanhamentoPedagogico.html", {
+        'aluno': aluno,
+        'info_aluno': info_aluno,
+        'acompanhamentos': acompanhamentos,
+        'tipos_ocorrencia': tipos_ocorrencia,
+        'detalhado': False,  # <--- Marca como Simplificado
+    })
+
 
 @login_required(login_url="/login/")
-@permission_required(perm='pedagogico.view_acompanhamentopedagogicoaluno', login_url='/geral/paginaSemPermissao')
-def listAcompanhamentoPedagogicoDetalhado(request, id):     
-    return listAcompanhamentoPedagogicoExibicao(request, id, 'D')
+@permission_required(perm='pedagogico.delete_acompanhamentopedagogicoaluno', login_url='/geral/paginaSemPermissao')
+def listAcompanhamentoPedagogico(request, id):
+    aluno = get_object_or_404(Pessoa, id=id)
+
+    # 1. Recupera ou cria as informações de PAEVS e Deficiência do aluno
+    info_aluno, _ = InformacoesAlunos.objects.get_or_create(
+        aluno_id=id,
+        defaults={'paevs': 'N', 'deficiencia': 'N'}
+    )
+
+    # 2. Verifica a permissão de ocorrência restrita
+    pode_ver_restrito = (
+            request.user.is_superuser or
+            request.user.has_perm('pedagogico.atendimento_de_ocorrencia_restrita') or
+            request.user.has_perm('pedagogico.view_acompanhamentopedagogicoalunorestrito') or
+            request.user.user_permissions.filter(name__icontains='restrita').exists() or
+            request.user.groups.filter(permissions__name__icontains='restrita').exists()
+    )
+
+    # 3. Busca os acompanhamentos ativos (soft delete)
+    acompanhamentos = AcompanhamentoPedagogicoAluno.objects.filter(
+        aluno=aluno
+    ).exclude(status='E').select_related('tipoOcorrencia', 'atendimento').order_by('-dataAtendimento', '-id')
+
+    # 4. Se NÃO tem permissão, esconde o que NÃO é público (statusPublico='N')
+    if not pode_ver_restrito:
+        acompanhamentos = acompanhamentos.exclude(tipoOcorrencia__statusPublico='N')
+
+    # Filtro opcional do combobox
+    tipo_filtro = request.GET.get('tipo_atendimento')
+    if tipo_filtro:
+        acompanhamentos = acompanhamentos.filter(tipoOcorrencia_id=tipo_filtro)
+
+    # Combobox de busca (também oculta tipos restritos para quem não pode ver)
+    tipos_ocorrencia = TipoOcorrencia.objects.all().order_by('nome')
+    if not pode_ver_restrito:
+        tipos_ocorrencia = tipos_ocorrencia.exclude(statusPublico='N')
+
+    return render(request, "listAcompanhamentoPedagogico.html", {
+        'aluno': aluno,
+        'info_aluno': info_aluno,          # Agora definida e enviada corretamente
+        'acompanhamentos': acompanhamentos,
+        'tipos_ocorrencia': tipos_ocorrencia,
+        'restrito': pode_ver_restrito,     # Controla a visibilidade do botão no template
+        'detalhado': False,
+    })
+
+
+@login_required(login_url="/login/")
+def listAcompanhamentoPedagogicoDetalhado(request, id):
+    aluno = get_object_or_404(Pessoa, id=id)
+
+    # 1. Recupera ou cria as informações de PAEVS e Deficiência do aluno
+    info_aluno, _ = InformacoesAlunos.objects.get_or_create(
+        aluno_id=id,
+        defaults={'paevs': 'N', 'deficiencia': 'N'}
+    )
+    pode_ver_restrito = (
+            request.user.is_superuser or
+            request.user.has_perm('pedagogico.atendimento_de_ocorrencia_restrita') or
+            request.user.has_perm('pedagogico.view_acompanhamentopedagogicoalunorestrito') or
+            request.user.user_permissions.filter(name__icontains='restrita').exists() or
+            request.user.groups.filter(permissions__name__icontains='restrita').exists()
+    )
+
+    # 2. Busca acompanhamentos ativos (soft delete)
+    acompanhamentos = AcompanhamentoPedagogicoAluno.objects.filter(
+        aluno=aluno
+    ).exclude(status='E').select_related('tipoOcorrencia', 'atendimento').order_by('-dataAtendimento', '-id')
+
+    # 3. FILTRO CORRETO USANDO statusPublico:
+    # Se NÃO tiver a permissão, oculta as ocorrências que NÃO são públicas (statusPublico='N')
+    if not pode_ver_restrito:
+        acompanhamentos = acompanhamentos.exclude(tipoOcorrencia__statusPublico='N')
+
+    # Filtro opcional do combobox
+    tipo_filtro = request.GET.get('tipo_atendimento')
+    if tipo_filtro:
+        acompanhamentos = acompanhamentos.filter(tipoOcorrencia_id=tipo_filtro)
+
+    # O combobox também esconde tipos restritos para quem não pode ver
+    tipos_ocorrencia = TipoOcorrencia.objects.all().order_by('nome')
+    if not pode_ver_restrito:
+        tipos_ocorrencia = tipos_ocorrencia.exclude(statusPublico='N')
+
+    return render(request, "listAcompanhamentoPedagogico.html", {
+        'aluno': aluno,
+        'info_aluno': info_aluno,
+        'acompanhamentos': acompanhamentos,
+        'tipos_ocorrencia': tipos_ocorrencia,
+        'restrito': pode_ver_restrito,
+        'detalhado': True,
+    })
 
 
 @login_required(login_url="/login/")
@@ -478,3 +591,92 @@ def chartAcompanhamentoOcorrencia(request):
     else:
         return render(request, 'chartAcompanhamento.html', {'listTipoOcorrencia':listTipoOcorrencia,'tipoGrafico':tipoGrafico})
 
+
+@login_required(login_url="/login/")
+def updateSimDeficiencia(request, id):
+    info, _ = InformacoesAlunos.objects.get_or_create(aluno_id=id, defaults={'paevs': 'N'})
+    info.deficiencia = 'S'
+    info.save()
+    return redirect('pedagogico:listAcompanhamentoPedagogico', id=id)
+
+@login_required(login_url="/login/")
+def updateNaoDeficiencia(request, id):
+    info, _ = InformacoesAlunos.objects.get_or_create(aluno_id=id, defaults={'paevs': 'N'})
+    info.deficiencia = 'N'
+    info.save()
+    return redirect('pedagogico:listAcompanhamentoPedagogico', id=id)
+
+@login_required(login_url="/login/")
+@permission_required(perm='pedagogico.delete_acompanhamentopedagogicoaluno', login_url='/geral/paginaSemPermissao')
+def excluirAcompanhamentoPedagogico(request, id):
+    acompanhamento = get_object_or_404(AcompanhamentoPedagogicoAluno, id=id)
+    aluno_id = acompanhamento.aluno_id
+
+    if request.method == "POST":
+        motivo = request.POST.get('motivoExclusao', '').strip()
+        if not motivo:
+            messages.error(request, "É obrigatório informar o motivo da exclusão.")
+            return redirect('pedagogico:listAcompanhamentoPedagogico', id=aluno_id)
+
+        # Identifica a Pessoa associada ao usuário autenticado
+        usuario_responsavel = getattr(request.user, 'pessoa', None)
+        if not usuario_responsavel:
+            usuario_responsavel = Pessoa.objects.filter(user=request.user).first()
+
+        # Aplica o Soft Delete gravando quem excluiu, o motivo e a data
+        acompanhamento.status = 'E'
+        acompanhamento.motivoExclusao = motivo
+        acompanhamento.excluidoPor = usuario_responsavel
+        acompanhamento.dataExclusao = datetime.now()
+        acompanhamento.save()
+
+        messages.success(request, "Atendimento removido com sucesso!")
+        return redirect('pedagogico:listAcompanhamentoPedagogico', id=aluno_id)
+
+    return redirect('pedagogico:listAcompanhamentoPedagogico', id=aluno_id)
+
+
+@login_required(login_url="/login/")
+def listAlunosComDeficiencia(request):
+    """
+    Lista todos os alunos que possuem a flag de deficiência marcada como 'S',
+    seguindo o mesmo modelo da listagem de alunos com PAEVS.
+    """
+    # 1. Busca os registros com deficiência ativa
+    info_alunos = InformacoesAlunos.objects.filter(
+        deficiencia='S'
+    ).select_related('aluno').order_by('aluno__nome')
+
+    alunos_ids = [item.aluno_id for item in info_alunos]
+
+    # 2. Busca cursos/matrículas ativas desses alunos para exibir curso e período atual
+    matriculas_ativas = Matricula.objects.filter(
+        aluno_id__in=alunos_ids,
+        status='A'
+    ).select_related('unidadeCurricular__curso').order_by('periodo')
+
+    # Agrupa cursos por aluno (evitando duplicações)
+    cursos_por_aluno = {}
+    for m in matriculas_ativas:
+        if m.aluno_id not in cursos_por_aluno and m.unidadeCurricular and m.unidadeCurricular.curso:
+            cursos_por_aluno[m.aluno_id] = {
+                'curso': m.unidadeCurricular.curso.nome,
+                'periodo': m.periodo
+            }
+
+    # 3. Monta a lista final para o template
+    dados_alunos = []
+    for info in info_alunos:
+        aluno = info.aluno
+        vinculo = cursos_por_aluno.get(aluno.id, {'curso': 'Sem matrícula ativa', 'periodo': '-'})
+        dados_alunos.append({
+            'aluno': aluno,
+            'curso': vinculo['curso'],
+            'periodo': vinculo['periodo'],
+            'paevs': info.paevs,
+        })
+
+    return render(request, "listAlunosComNecessidades.html", {
+        'dados_alunos': dados_alunos,
+        'total': len(dados_alunos),
+    })

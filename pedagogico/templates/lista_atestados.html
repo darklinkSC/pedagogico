@@ -23,38 +23,48 @@
         </div>
     </div>
 
-    <div class="card-body">
-    <form method="GET" id="filterForm">
-        <div class="row">
-            <div class="col-md-5">
-                <label class="font-weight-bold">Turma:</label>
-                <select name="turma_slug" class="form-control">
-                    <option value="">-- Selecione --</option>
-                    {% for t in opcoes_turmas %}
-                        <option value="{{ t }}" {% if turma_sel == t %}selected{% endif %}>{{ t }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="col-md-5">
-                <label class="font-weight-bold">Data de Referência:</label>
-                <input type="date" name="data_pesquisa" class="form-control" value="{{ data_pesquisa }}">
-            </div>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" id="filterForm">
+                <div class="row align-items-end">
+                    <div class="col-md-4">
+                        <label class="font-weight-bold">Turma:</label>
+                        <select name="turma_slug" class="form-control" required>
+                            <option value="">-- Selecione --</option>
+                            {% for t in opcoes_turmas %}
+                                <option value="{{ t }}" {% if turma_sel == t %}selected{% endif %}>{{ t }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-            <div class="col-md-2">
-                <label>&nbsp;</label>
-                <button type="submit" class="btn btn-primary btn-block">
-                    <i class="feather icon-search"></i> Filtrar
-                </button>
-            </div>
+                    <div class="col-md-3">
+                        <label class="font-weight-bold">Data Início:</label>
+                        <input type="date" name="data_inicio" class="form-control" value="{{ data_inicio }}">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="font-weight-bold">Data Fim:</label>
+                        <input type="date" name="data_fim" class="form-control" value="{{ data_fim }}">
+                    </div>
+
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="feather icon-search"></i> Filtrar
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
-    </form>
     </div>
 
     {% if turma_sel %}
     <div class="row">
         <div class="col-xl-12">
             <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="m-0 font-weight-bold text-dark">Turma: {{ turma_sel }}</h5>
+                    <span class="badge badge-light-danger">{{ acompanhamentos|length }} atestado(s) no período</span>
+                </div>
                 <div class="card-body table-border-style">
                     <div class="table-responsive">
                         <table class="table table-hover table-striped">
@@ -65,16 +75,20 @@
                                     <th>Previsão de Retorno</th>
                                 </tr>
                             </thead>
-                                <tbody>
-                                    {% for registro in acompanhamentos %}
-                                        <tr>
-                                            <td><strong>{{ registro.nome }}</strong></td>
-                                            <td><span class="badge badge-light-danger">{{ registro.dataAtestadoInicio|date:'d/m/Y' }}</span></td>
-                                            <td><span class="badge badge-danger">{{ registro.dataAtestadoFim|date:'d/m/Y' }}</span></td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                            <tbody>
+                                {% for registro in acompanhamentos %}
+                                    <tr>
+                                        <td><strong>{{ registro.nome }}</strong></td>
+                                        <td><span class="badge badge-light-danger">{{ registro.dataAtestadoInicio|date:'d/m/Y' }}</span></td>
+                                        <td><span class="badge badge-danger">{{ registro.dataAtestadoFim|date:'d/m/Y' }}</span></td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-4">Nenhum atestado encontrado para o período informado.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

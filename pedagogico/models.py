@@ -81,6 +81,7 @@ class ImportConselhoClasse(models.Model):
 class InformacoesAlunos(models.Model):
     aluno = models.OneToOneField(Pessoa, primary_key=True, on_delete=models.CASCADE,null=False,blank=False)
     paevs = models.CharField(u"Recebe PAEVs", max_length=1, null=False, blank=False, choices=SIM_NAO)
+    deficiencia = models.CharField(u"Possui Deficiência",max_length=1,choices=SIM_NAO,default='N')
     class Meta:
         db_table = "informacoesAlunos"
     def __str__(self):
@@ -118,7 +119,17 @@ class AcompanhamentoPedagogicoAluno(models.Model):
     descricao = RichTextField(u"Descrição", null=True, blank=False)
     dataAtendimento = models.DateField(u"Data Atendimento", null=True,blank=True)
     anexo = models.FileField(u"Anexo", null=True,blank=True, upload_to='documents/acompanhamento/%Y/%m/%d/')
-
+    status = models.CharField(u"Status", max_length=1, default='A', choices=(('A', 'Ativo'), ('E', 'Excluído')))
+    motivoExclusao = models.TextField(u"Motivo da Exclusão", null=True, blank=True)
+    excluidoPor = models.ForeignKey(
+        Pessoa,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="acompanhamentos_excluidos",
+        verbose_name=u"Excluído por"
+    )
+    dataExclusao = models.DateTimeField(u"Data da Exclusão", null=True, blank=True)
     class Meta:
         db_table = "acompanhamento_pedagogico_aluno"
         permissions = (

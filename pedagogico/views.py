@@ -532,34 +532,38 @@ from .models import Matricula, AcompanhamentoPedagogicoAluno
 from django.db import connection
 from django.utils import timezone
 
+
 def lista_alunos_atestado(request):
-    # 1. Combo de Turmas (mantendo a lógica dinâmica)
-    turmas_existentes = Matricula.objects.values(
-        'unidadeCurricular__curso__sigla', 
+    # 1. Combo de Turmas
+    turmas_existentes = Matricula.objects.filter(status='A').values(
+        'unidadeCurricular__curso__sigla',
         'periodo'
     ).distinct().order_by('-unidadeCurricular__curso__sigla', 'periodo')
 
     opcoes_turmas = [
-        f"{t['unidadeCurricular__curso__sigla']}-{t['periodo']}" 
+        f"{t['unidadeCurricular__curso__sigla']}-{t['periodo']}"
         for t in turmas_existentes
     ]
 
-    data_pesquisa = request.GET.get('data_pesquisa')
-    turma_sel = request.GET.get('turma_slug')
+    # 2. Recebe as datas de início e fim
+    data_inicio = request.GET.get('data_inicio', '').strip()
+    data_fim = request.GET.get('data_fim', '').strip()
+    turma_sel = request.GET.get('turma_slug', '').strip()
     acompanhamentos = []
 
-    # Se o usuário informou uma data, usa ela. Se não, usa hoje.
-    if data_pesquisa:
-        data_base = data_pesquisa
-    else:
-        data_base = timezone.now().date().strftime('%Y-%m-%d')
-    
+    hoje = timezone.now().date().strftime('%Y-%m-%d')
+    if not data_inicio and not data_fim:
+        data_inicio = hoje
+        data_fim = hoje
+    elif data_inicio and not data_fim:
+        data_fim = data_inicio
+    elif data_fim and not data_inicio:
+        data_inicio = data_fim
+
+    # 3. Executa a busca se a turma estiver selecionada
     if turma_sel and "-" in turma_sel:
         sigla, periodo = turma_sel.split("-")
-        #hoje = timezone.now().date().strftime('%Y-%m-%d') # Formato '2026-02-26'
 
-        # 2. Executando o SEU SQL com as regras de filtro de curso/período
-        # Inseri os JOINs necessários para filtrar pela Sigla e Período das Matrículas
         query = """
             SELECT DISTINCT
                 a.id, 
@@ -574,22 +578,28 @@ def lista_alunos_atestado(request):
             INNER JOIN unidadeCurricular uc ON (m.unidadeCurricular_id = uc.id)
             INNER JOIN curso c ON (uc.curso_id = c.id)
             WHERE 
-                STR_TO_DATE(%s, '%%Y-%%m-%%d') BETWEEN a.dataAtestadoInicio AND a.dataAtestadoFim
-                AND a.tipoOcorrencia_id = 9
+                a.tipoOcorrencia_id = 9
+                AND (a.status IS NULL OR a.status != 'E')
+                AND (m.status IS NULL OR m.status = 'A')
                 AND c.sigla = %s
                 AND m.periodo = %s
+                AND a.dataAtestadoInicio <= STR_TO_DATE(%s, '%%Y-%%m-%%d')
+                AND a.dataAtestadoFim >= STR_TO_DATE(%s, '%%Y-%%m-%%d')
             ORDER BY 
                 p.nome ASC
         """
-        
-        # Executa a query passando os parâmetros (hoje, sigla, periodo)
-        acompanhamentos = AcompanhamentoPedagogicoAluno.objects.raw(query, [data_base, sigla, periodo])
+
+        # Parâmetros: sigla, periodo, data_fim, data_inicio
+        acompanhamentos = AcompanhamentoPedagogicoAluno.objects.raw(
+            query, [sigla, periodo, data_fim, data_inicio]
+        )
 
     return render(request, 'lista_atestados.html', {
         'opcoes_turmas': opcoes_turmas,
         'acompanhamentos': acompanhamentos,
         'turma_sel': turma_sel,
-        'data_pesquisa': data_base
+        'data_inicio': data_inicio,
+        'data_fim': data_fim
     })
 
 
